@@ -52,7 +52,7 @@ jobs:
 
   # Build docker image
   docker:
-    needs: [test, changes]
+    needs: [build-and-test, changes]
     if: ${{ needs.changes.output.services != '[]' }}
     runs-on: self-hosted
     strategy:
