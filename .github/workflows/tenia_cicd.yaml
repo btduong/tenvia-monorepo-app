@@ -15,6 +15,24 @@ on:
       - 'pom.xml'
 
 jobs:
+  # Determine which module changes
+  changes:
+    runs-on: self-hosted
+    outputs:
+      services: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            tenvia-app:
+            - 'tenvia-app/**'
+            - 'tenvia-common/**'
+            leaderboard-service:
+            - 'leaderboard-service/**'
+            - 'tenvia-common/**'
+
   # Run tests
   build-and-test:
     runs-on: self-hosted
@@ -29,11 +47,39 @@ jobs:
           cache: 'maven'
 
       - name: Run unit and integration tests
-        run: ./mvnw clean test -U -B
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-      - name: Build Jar
-        run: ./mvnw package -DskipTests -B
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        # -B (batch) to reduce log noise
+        run: ./mvnw clean test -B]
 
+  # Build docker image
+  docker:
+    needs: [test, changes]
+    if: ${{ needs.changes.output.services != '[]' }}
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.changes.outputs.services) }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Extract Maven module version
+        id: get_version
+        # Point Maven to the specific module's pom.xml
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f ${{ matrix.service }}/pom.xml)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build JAR
+        # -pl (project list);ea ${{ matrix.service }} is the name of the module that changes; -am (also make) build dependencies that
+        run: mvn clean install -pl ${{ matrix.service }} -am -DskipTests
+
+      - name: Build Docker Image
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          TAG="my-reg/${{ matrix.service }}:$VERSION
+          docker build -t $TAG ./${{ matrix.service }}
+          echo "Built completed for $TAG"
