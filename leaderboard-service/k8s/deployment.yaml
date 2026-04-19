@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: leaderboard-app
+  name: leaderboard-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: leaderboard-app
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: leaderboard-app
+    spec:
+      containers:
+      - image: docker.io/library/tenvia:latest
+        name: leaderboard-app
+        imagePullPolicy: Never
+        resources: {}
+status: {}

@@ -12,6 +12,7 @@
     <modules>
         <module>tenvia-app</module>
         <module>tenvia-common</module>
+        <module>leaderboard-service</module>
     </modules>
 
 </project>
