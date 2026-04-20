@@ -59,7 +59,7 @@ jobs:
 
       - name: Run unit and integration tests
         # -B (batch) to reduce log noise
-        run: ./mvnw clean test -B]
+        run: ./mvnw clean test -B
 
   # Build docker image
   docker:
