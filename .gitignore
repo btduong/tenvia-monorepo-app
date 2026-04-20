@@ -36,3 +36,5 @@ build/
 .idea/
 ### Mac OS ###
 .DS_Store
+
+out
