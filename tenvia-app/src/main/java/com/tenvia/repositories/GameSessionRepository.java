@@ -21,8 +21,13 @@ public interface GameSessionRepository extends JpaRepository<GameSessionEntity, 
      */
     List<GameSessionEntity> findTop10ByIsOverTrueOrderByScoreDesc();
 
-    @Query("select g from game_session g where g.isCompleted = false and g.endTime < :now")
-    List<GameSessionEntity> findExpiredSessions(LocalDateTime now);
+    /**
+     * A query to return all game sessions that have expired. Slower than 'findAndKillSessions' as it has to do
+     * as many save op as the elements there are in the list.
+     * @param now
+     * @return a list of game session entity that has expired
+     */
+    List<GameSessionEntity> findByIsCompletedFalseAndEndTimeBefore(LocalDateTime now);
 
     /**
      * A faster version of findExpiredSessions which manually calls g.isOver(true) in the code.
