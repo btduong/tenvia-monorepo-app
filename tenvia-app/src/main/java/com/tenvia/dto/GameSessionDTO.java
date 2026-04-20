@@ -21,4 +21,6 @@ public class GameSessionDTO {
     private int score = 0;
     private UUID id;
     private UserDTO user;
+    private long duration;
+    private String endTime;
 }

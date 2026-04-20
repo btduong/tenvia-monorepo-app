@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -65,6 +66,10 @@ public class GameSessionEntity {
 
     private boolean isOver = false;
 
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private boolean isCompleted;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
@@ -77,5 +82,11 @@ public class GameSessionEntity {
     )
     @Column(name = "reward_amount") // The name of the value column
     private List<Integer> goldRewards = new ArrayList<>();
+
+    public void startSession(int sessionDurationInMinute) {
+        startTime = LocalDateTime.now();
+        endTime = startTime.plusMinutes(sessionDurationInMinute);
+        isCompleted = false;
+    }
 
 }
