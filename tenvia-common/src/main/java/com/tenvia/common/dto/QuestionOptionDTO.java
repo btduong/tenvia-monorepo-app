@@ -1,4 +1,4 @@
-package com.tenvia.dto;
+package com.tenvia.common.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,9 +1,9 @@
-package com.tenvia.question_service_ms;
+package com.tenvia.question;
 
-import com.tenvia.dto.QuestionDTO;
-import com.tenvia.dto.QuestionOptionDTO;
-import com.tenvia.question_service_ms.entities.QuestionEntity;
-import com.tenvia.question_service_ms.entities.QuestionOptionEntity;
+import com.tenvia.common.dto.QuestionDTO;
+import com.tenvia.common.dto.QuestionOptionDTO;
+import com.tenvia.question.entities.QuestionEntity;
+import com.tenvia.question.entities.QuestionOptionEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

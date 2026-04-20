@@ -25,23 +25,23 @@ RUN ./mvnw install -pl tenvia-common -am -DskipTests
 #RUN ./mvnw dependency:go-offline # Download deps once
 # 3. NOW you can go offline for the leaderboard service
 # Maven will now "see" tenvia-common in the container's local repo
-RUN ./mvnw dependency:go-offline -pl tenvia-app
+RUN ./mvnw dependency:go-offline -pl question-service
 
 # copy source code and build the jar
 #COPY src ./src
 # 5. Copy the actual source code
 COPY tenvia-common/src tenvia-common/src
-COPY tenvia-app/src tenvia-app/src
+COPY question-service/src question-service/src
 
 #RUN ./mvnw package -DskipTests
-RUN ./mvnw package -pl tenvia-app -am -DskipTests
+RUN ./mvnw package -pl question-service -am -DskipTests
 
 #Stage 2 - Runtime
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # use wildcard
-COPY --from=build /app/tenvia-app/target/*.jar app.jar
+COPY --from=build /app/question-service/target/*.jar app.jar
 
 # Run as a non-root user for security. Below is for debian/ubuntu-based image ie eclipse-temurin
 RUN groupadd -r spring && useradd -r -g spring spring

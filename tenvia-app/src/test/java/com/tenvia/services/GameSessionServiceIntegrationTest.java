@@ -1,16 +1,11 @@
-package com.tenvia.question_service_ms;
+package com.tenvia.services;
 
 import com.tenvia.TenviaApplication;
 import com.tenvia.components.QuestionProvider;
-import com.tenvia.dto.QuestionDTO;
+import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
-import com.tenvia.question_service_ms.entities.QuestionEntity;
-import com.tenvia.question_service_ms.entities.QuestionOptionEntity;
 import com.tenvia.repositories.GameSessionRepository;
-import com.tenvia.services.GameSessionService;
-import com.tenvia.services.RewardService;
-import com.tenvia.services.UserService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -66,23 +61,6 @@ class GameSessionServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        QuestionOptionEntity optB = new QuestionOptionEntity();
-        optB.setLetter("B");
-        optB.setId(500);
-
-        QuestionOptionEntity optA = new QuestionOptionEntity();
-        optA.setLetter("A");
-        optA.setId(400);
-
-        QuestionEntity qe = new QuestionEntity();
-        qe.setCorrectLetter("B");
-        qe.setExplanation("Integration test success.");
-        qe.setOptions(List.of(optB));
-
-        QuestionEntity qe2 = new QuestionEntity();
-        qe2.setCorrectLetter("A");
-        qe2.setExplanation("Integration test success.");
-        qe2.setOptions(List.of(optA));
 
         userEntity = UserEntity.builder().username("username").id(1L).balance(0).build();
 

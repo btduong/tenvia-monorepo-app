@@ -1,12 +1,12 @@
 package com.tenvia.services;
 
+import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.components.QuestionProvider;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
-import com.tenvia.dto.QuestionDTO;
-import com.tenvia.dto.QuestionOptionDTO;
+import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.dto.QuestionResponse;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;

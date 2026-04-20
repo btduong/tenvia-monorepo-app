@@ -1,5 +1,6 @@
 package com.tenvia.dto;
 
+import com.tenvia.common.dto.QuestionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

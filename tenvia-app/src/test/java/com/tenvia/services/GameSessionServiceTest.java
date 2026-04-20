@@ -1,16 +1,15 @@
 package com.tenvia.services;
 
+import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.components.QuestionProvider;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
-import com.tenvia.dto.QuestionDTO;
-import com.tenvia.dto.QuestionOptionDTO;
+import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

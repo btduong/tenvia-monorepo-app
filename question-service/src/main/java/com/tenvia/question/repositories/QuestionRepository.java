@@ -1,6 +1,6 @@
-package com.tenvia.question_service_ms.repositories;
+package com.tenvia.question.repositories;
 
-import com.tenvia.question_service_ms.entities.QuestionEntity;
+import com.tenvia.question.entities.QuestionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
