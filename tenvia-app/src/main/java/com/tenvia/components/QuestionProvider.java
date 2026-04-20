@@ -1,6 +1,8 @@
 package com.tenvia.components;
 
-import com.tenvia.dto.QuestionDTO;
+import com.tenvia.common.dto.QuestionDTO;
+import com.tenvia.config.QuestionServiceConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -11,9 +13,10 @@ public class QuestionProvider {
 
     private final WebClient webClient;
 
-    public QuestionProvider(WebClient.Builder webClientBuilder) {
+    // Need to pass config through constructor and not inject it in with @Value because QuestionProvider may not or still is being built.
+    public QuestionProvider(WebClient.Builder webClientBuilder, QuestionServiceConfig config) {
         this.webClient = webClientBuilder
-                .baseUrl("http://localhost:8080")
+                .baseUrl(config.getUrl())
                 .build();
     }
 

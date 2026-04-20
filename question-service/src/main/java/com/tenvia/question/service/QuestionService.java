@@ -1,9 +1,9 @@
-package com.tenvia.question_service_ms.service;
+package com.tenvia.question.service;
 
-import com.tenvia.dto.QuestionDTO;
-import com.tenvia.question_service_ms.QuestionMapper;
-import com.tenvia.question_service_ms.entities.QuestionEntity;
-import com.tenvia.question_service_ms.repositories.QuestionRepository;
+import com.tenvia.common.dto.QuestionDTO;
+import com.tenvia.question.QuestionMapper;
+import com.tenvia.question.entities.QuestionEntity;
+import com.tenvia.question.repositories.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

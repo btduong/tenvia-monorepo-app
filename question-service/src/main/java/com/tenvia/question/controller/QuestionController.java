@@ -1,7 +1,7 @@
-package com.tenvia.question_service_ms.controller;
+package com.tenvia.question.controller;
 
-import com.tenvia.dto.QuestionDTO;
-import com.tenvia.question_service_ms.service.QuestionService;
+import com.tenvia.common.dto.QuestionDTO;
+import com.tenvia.question.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -16,6 +16,7 @@ COPY mvnw pom.xml ./
 COPY tenvia-common/pom.xml tenvia-common/pom.xml
 COPY leaderboard-service/pom.xml leaderboard-service/pom.xml
 COPY tenvia-app/pom.xml tenvia-app/pom.xml
+COPY question-service/pom.xml question-service/pom.xml
 
 # 2. Build and Install ONLY the common library first
 # We use -pl (project list) and install it to the container's .m2

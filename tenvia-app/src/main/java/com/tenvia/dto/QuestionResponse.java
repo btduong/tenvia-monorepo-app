@@ -1,5 +1,7 @@
 package com.tenvia.dto;
 
+import com.tenvia.common.dto.QuestionOptionDTO;
+
 import java.util.List;
 
 public record QuestionResponse(

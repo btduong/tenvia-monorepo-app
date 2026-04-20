@@ -1,4 +1,4 @@
-package com.tenvia.question_service_ms.entities;
+package com.tenvia.question.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

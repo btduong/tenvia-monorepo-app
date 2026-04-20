@@ -1,6 +1,6 @@
 package com.tenvia.mappers;
 
-import com.tenvia.dto.QuestionDTO;
+import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.dto.QuestionResponse;
 import org.springframework.stereotype.Component;
 

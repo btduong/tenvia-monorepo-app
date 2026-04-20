@@ -1,7 +1,7 @@
 package com.tenvia.mappers;
 
 import com.tenvia.dto.GameSessionDTO;
-import com.tenvia.dto.QuestionDTO;
+import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.dto.UserDTO;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
