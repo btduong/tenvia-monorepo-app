@@ -33,6 +33,6 @@ public interface GameSessionRepository extends JpaRepository<GameSessionEntity, 
      * @return the number of rows were updated
      */
     @Modifying // Indicate Spring that this is an update or delete
-    @Query("update GameSessionEntity g SET g.isOver = true where g.isOver = false AND g.endAt < :now")
+    @Query("update GameSessionEntity g SET g.isOver = true where g.isOver = false AND g.endTime < :now")
     int findAndKillSessions(@Param("now") LocalDateTime now);
 }
