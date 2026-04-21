@@ -26,6 +26,5 @@ public class SessionTerminator {
     public void findAndTerminate() {
         LocalDateTime now = LocalDateTime.now();
         int terminatedCount = sessionRepository.findAndKillSessions(now);
-        log.info("{} has expired", terminatedCount);
     }
 }

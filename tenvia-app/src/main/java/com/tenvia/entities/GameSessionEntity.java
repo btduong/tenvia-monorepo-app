@@ -83,9 +83,9 @@ public class GameSessionEntity {
     @Column(name = "reward_amount") // The name of the value column
     private List<Integer> goldRewards = new ArrayList<>();
 
-    public void startSession(int sessionDurationInMinute) {
+    public void startSession(int sessionDurationInSecond) {
         startTime = LocalDateTime.now();
-        endTime = startTime.plusMinutes(sessionDurationInMinute);
+        endTime = startTime.plusSeconds(sessionDurationInSecond);
         isCompleted = false;
     }
 
