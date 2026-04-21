@@ -1,8 +1,6 @@
 package com.tenvia.components;
 
 import com.tenvia.repositories.GameSessionRepository;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,11 +16,11 @@ import java.time.LocalDateTime;
 public class SessionTerminator {
 
     private final GameSessionRepository sessionRepository;
-    private final Counter sessionTimedoutCounter;
+    private final GameSessionMetrics gameSessionMetrics;
 
-    public SessionTerminator(GameSessionRepository gameSessionRepository, MeterRegistry registry) {
+    public SessionTerminator(GameSessionRepository gameSessionRepository, GameSessionMetrics gameSessionMetrics) {
         this.sessionRepository = gameSessionRepository;
-        this.sessionTimedoutCounter = registry.counter("game.session.timedout");
+        this.gameSessionMetrics = gameSessionMetrics;
     }
 
     @Scheduled(fixedRateString = "${session.terminator.schedule.rate}")
@@ -30,6 +28,10 @@ public class SessionTerminator {
     public void findAndTerminate() {
         LocalDateTime now = LocalDateTime.now();
         int terminatedCount = sessionRepository.findAndKillSessions(now);
-        sessionTimedoutCounter.increment(terminatedCount);
+
+        // Only update the metrics if it has changed
+        if (terminatedCount > 0) {
+            gameSessionMetrics.updateTimeout(terminatedCount);
+        }
     }
 }
