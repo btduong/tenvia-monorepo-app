@@ -52,7 +52,7 @@ public class GameSessionService {
     @Autowired
     private QuestionResponseMapper questionResponseMapper;
 
-    @Value("${session.duration.in.seconds:120}")
+    @Value("${session.duration.in.seconds:900}")
     private int sessionDuration;
 
     public GameSessionDTO createNewSession(Long userId, int limit) {
