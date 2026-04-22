@@ -37,7 +37,8 @@ public interface GameSessionRepository extends JpaRepository<GameSessionEntity, 
      * @param now - current local date time
      * @return the number of rows were updated
      */
-    @Modifying // Indicate Spring that this is an update or delete
+    @Modifying(clearAutomatically = true) // Indicate Spring that this is an update or delete and clearAutomatically
+    // will force hibernate to clear out the cache and get the data directly otherwise hibernate will return 'staled' data from the cache which hasn't been updated by this query
     @Query("update GameSessionEntity g SET g.isOver = true where g.isOver = false AND g.endTime < :now")
     int findAndKillSessions(@Param("now") LocalDateTime now);
 }
