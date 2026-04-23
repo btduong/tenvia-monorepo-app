@@ -24,19 +24,23 @@ spec:
         env:
         - name: profile
           value: dev
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq"
+        - name: SPRING_RABBITMQ_PORT
+          value: "5672"
 
         # Readiness Probe: gate the traffic until the app is healthy
         readinessProbe:
           httpGet:
             path: "actuator/health/readiness"
-            port: 8080
+            port: 8083
           initialDelaySeconds: 20 # allow up to 20s for the app 'boot' up before checking
           periodSeconds: 10 # probe evvery 10s
 
         livenessProbe:
           httpGet:
             path: "actuator/health/liveness"
-            port: 8080
+            port: 8083
           initialDelaySeconds: 20 # Assume the app is dead after 20s
           periodSeconds: 20
 
