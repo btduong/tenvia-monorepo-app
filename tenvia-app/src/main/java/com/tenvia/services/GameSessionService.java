@@ -15,9 +15,11 @@ import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.mappers.QuestionResponseMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,9 +27,9 @@ import java.util.UUID;
 
 @Service
 @Transactional
+@Slf4j
 public class GameSessionService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GameSessionService.class);
 
     @Autowired
     private GameSessionRepository gameSessionRepository;
@@ -50,6 +52,9 @@ public class GameSessionService {
     @Autowired
     private QuestionResponseMapper questionResponseMapper;
 
+    @Value("${session.duration.in.seconds:900}")
+    private int sessionDuration;
+
     public GameSessionDTO createNewSession(Long userId, int limit) {
         List<QuestionDTO> questionDTOList = questionProvider.fetchRandomQuestions(limit);
 
@@ -57,6 +62,7 @@ public class GameSessionService {
         List<Integer> goldRewards = rewardService.easyReward(questionDTOList.size());
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::getId).toList();
         GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds, goldRewards);
+        gameSessionEntity.startSession(sessionDuration);
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
 
@@ -182,7 +188,7 @@ public class GameSessionService {
                 .userName(session.getUser() != null ? session.getUser().getUsername() : "anonymous")
                 .score(session.getScore())
                 .build();
-        LOG.debug("Submitting score {} for user: {}", scoreSubmittedEvent.getScore(), scoreSubmittedEvent.getUserName());
+        log.debug("Submitting score {} for user: {}", scoreSubmittedEvent.getScore(), scoreSubmittedEvent.getUserName());
 
         scoreProducer.sendUpdate(scoreSubmittedEvent);
 
