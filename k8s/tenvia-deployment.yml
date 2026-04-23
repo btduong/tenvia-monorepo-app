@@ -1,0 +1,43 @@
+# Deployment tenvia-app
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenvia-app
+  labels:
+    app: tenvia-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tenvia-app
+  template:
+    metadata:
+      labels:
+        app: tenvia-app
+    spec:
+      containers:
+      - name: tenvia-app
+        image: tenvia-app:0.0.1-SNAPSHOT
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        env:
+        - name: QUESTION_SERVICE_URL
+          value: "http://question-service:8083"
+        - name: profile
+          value: "dev"
+        - name: QUESTION_SERVICE_PORT
+          value: "8083"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tenvia-app
+spec:
+  selector:
+    app: tenvia-app
+  ports:
+    - protocol: TCP
+      port: 8080 # pods' port ie http://question-service:8083
+      targetPort: 8080 # of the service
