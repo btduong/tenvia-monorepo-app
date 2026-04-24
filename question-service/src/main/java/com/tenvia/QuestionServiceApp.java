@@ -6,6 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class QuestionServiceApp {
     public static void main(String[] args) {
-        SpringApplication.run(QuestionServiceApp.class);
+        SpringApplication.run(QuestionServiceApp.class, args);
     }
 }

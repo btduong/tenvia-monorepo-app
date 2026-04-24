@@ -1,0 +1,61 @@
+# Deployment question-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: question-service
+  labels:
+    app: question-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: question-service
+  template:
+    metadata:
+      labels:
+        app: question-service
+    spec:
+      containers:
+      - name: question-service
+        image: question-service:0.0.1-SNAPSHOT
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8083
+        env:
+        - name: profile
+          value: dev
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq"
+        - name: SPRING_RABBITMQ_PORT
+          value: "5672"
+
+        # Readiness Probe: gate the traffic until the app is healthy
+        readinessProbe:
+          httpGet:
+            path: "actuator/health/readiness"
+            port: 8083
+          initialDelaySeconds: 20 # allow up to 20s for the app 'boot' up before checking
+          periodSeconds: 10 # probe evvery 10s
+
+        livenessProbe:
+          httpGet:
+            path: "actuator/health/liveness"
+            port: 8083
+          initialDelaySeconds: 20 # Assume the app is dead after 20s
+          periodSeconds: 20
+
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: question-service
+spec:
+  selector:
+    app: question-service
+  ports:
+    - protocol: TCP
+      port: 8083 # pods' port ie http://question-service:8083
+      targetPort: 8083 # of the service
+
+
