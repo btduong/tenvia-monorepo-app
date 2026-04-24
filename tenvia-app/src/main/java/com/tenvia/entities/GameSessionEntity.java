@@ -69,6 +69,8 @@ public class GameSessionEntity {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private boolean isCompleted;
+    private int correctAnswerCount = 0;
+    private int incorrectAnswerCount = 0;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

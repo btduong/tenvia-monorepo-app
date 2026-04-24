@@ -85,7 +85,10 @@ public class GameSessionService {
         if (isCorrect) {
             // Update Score
             session.setScore(session.getScore() + 1);
+            session.setCorrectAnswerCount(session.getCorrectAnswerCount() + 1);
             newBalance = handleCorrectAnswerGoldReward(session);
+        } else {
+            session.setIncorrectAnswerCount(session.getIncorrectAnswerCount() + 1);
         }
 
         // Move on to the next question
@@ -97,7 +100,7 @@ public class GameSessionService {
         }
 
         gameSessionRepository.save(session);
-        GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore());
+        GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount());
 
         return AnswerResponseDTO.builder()
                 .isCorrect(isCorrect)
