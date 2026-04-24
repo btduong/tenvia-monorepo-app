@@ -102,14 +102,15 @@ public class GameSessionService {
         gameSessionRepository.save(session);
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount());
 
-        return AnswerResponseDTO.builder()
-                .isCorrect(isCorrect)
-                .correctLetter(questionDTO.getCorrectLetter())
-                .explanation(questionDTO.getExplanation())
-                .newBalance(newBalance)
-                .isGameOver(session.isOver())
-                .summary(gameSessionSummary)
-                .build();
+        AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
+        answerResponseDTO.setCorrect(isCorrect);
+        answerResponseDTO.setCorrectLetter(questionDTO.getCorrectLetter());
+        answerResponseDTO.setExplanation(questionDTO.getExplanation());
+        answerResponseDTO.setNewBalance(newBalance);
+        answerResponseDTO.setGameOver(session.isOver());
+        answerResponseDTO.setSummary(gameSessionSummary);
+
+        return answerResponseDTO;
     }
 
     public QuestionResponse getNextQuestion(UUID sessionId) {
