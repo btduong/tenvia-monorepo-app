@@ -2,7 +2,6 @@ package com.tenvia.components;
 
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.config.QuestionServiceConfig;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 

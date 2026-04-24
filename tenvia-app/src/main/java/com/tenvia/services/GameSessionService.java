@@ -1,12 +1,12 @@
 package com.tenvia.services;
 
+import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.components.QuestionProvider;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
-import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.dto.QuestionResponse;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
@@ -16,8 +16,6 @@ import com.tenvia.mappers.QuestionResponseMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
