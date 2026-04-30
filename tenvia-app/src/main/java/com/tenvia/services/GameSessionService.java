@@ -100,15 +100,7 @@ public class GameSessionService {
         gameSessionRepository.save(session);
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount());
 
-        AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
-        answerResponseDTO.setCorrect(isCorrect);
-        answerResponseDTO.setCorrectLetter(questionDTO.getCorrectLetter());
-        answerResponseDTO.setExplanation(questionDTO.getExplanation());
-        answerResponseDTO.setNewBalance(newBalance);
-        answerResponseDTO.setGameOver(session.isOver());
-        answerResponseDTO.setSummary(gameSessionSummary);
-
-        return answerResponseDTO;
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver());
     }
 
     public QuestionResponse getNextQuestion(UUID sessionId) {
