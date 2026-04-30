@@ -1,12 +1,12 @@
 package com.tenvia.services;
 
+import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.components.QuestionProvider;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
-import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.dto.QuestionResponse;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
@@ -16,8 +16,6 @@ import com.tenvia.mappers.QuestionResponseMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -85,7 +83,10 @@ public class GameSessionService {
         if (isCorrect) {
             // Update Score
             session.setScore(session.getScore() + 1);
+            session.setCorrectAnswerCount(session.getCorrectAnswerCount() + 1);
             newBalance = handleCorrectAnswerGoldReward(session);
+        } else {
+            session.setIncorrectAnswerCount(session.getIncorrectAnswerCount() + 1);
         }
 
         // Move on to the next question
@@ -97,16 +98,9 @@ public class GameSessionService {
         }
 
         gameSessionRepository.save(session);
-        GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore());
+        GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount());
 
-        return AnswerResponseDTO.builder()
-                .isCorrect(isCorrect)
-                .correctLetter(questionDTO.getCorrectLetter())
-                .explanation(questionDTO.getExplanation())
-                .newBalance(newBalance)
-                .isGameOver(session.isOver())
-                .summary(gameSessionSummary)
-                .build();
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver());
     }
 
     public QuestionResponse getNextQuestion(UUID sessionId) {
