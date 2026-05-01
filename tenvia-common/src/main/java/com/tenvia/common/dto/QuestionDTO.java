@@ -21,4 +21,5 @@ public class QuestionDTO {
     private String correctLetter;
     private String explanation;
     private Integer correctOptionId;
+    private Integer expiresInSeconds;
 }

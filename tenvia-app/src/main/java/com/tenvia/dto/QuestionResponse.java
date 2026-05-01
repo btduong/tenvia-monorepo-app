@@ -8,4 +8,5 @@ public record QuestionResponse(
         Long id,
         String questionText,
         List<QuestionOptionDTO> options,
-        boolean powerUpDisabled) {}
+        boolean powerUpDisabled,
+        Integer expiresInSecond) {}

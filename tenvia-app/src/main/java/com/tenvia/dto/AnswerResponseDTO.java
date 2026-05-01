@@ -28,6 +28,7 @@ public class AnswerResponseDTO {
     private int newBalance;
     private boolean isGameOver;
     private GameSessionSummary summary;
+    private boolean hasTimedOut;
 
     @JsonProperty("isGameOver")
     public boolean isGameOver() {

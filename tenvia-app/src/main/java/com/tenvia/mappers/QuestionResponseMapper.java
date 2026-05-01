@@ -7,10 +7,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class QuestionResponseMapper {
 
-    public QuestionResponse toQuestionResonse(QuestionDTO questionDTO) {
+    public QuestionResponse toQuestionResponse(QuestionDTO questionDTO) {
         return new QuestionResponse(questionDTO.getId(),
                 questionDTO.getQuestionText(),
                 questionDTO.getOptions(),
-                questionDTO.isPowerUpDisabled());
+                questionDTO.isPowerUpDisabled(),
+                questionDTO.getExpiresInSeconds());
     }
 }

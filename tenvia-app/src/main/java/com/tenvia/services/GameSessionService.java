@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -73,6 +74,12 @@ public class GameSessionService {
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
+        LocalDateTime questionStartTime = session.getQuestionStartTime();
+        if (LocalDateTime.now().isAfter(questionStartTime.plusSeconds(session.getQuestionTimeLimitInSeconds()))) {
+            AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
+            answerResponseDTO.setHasTimedOut(true);
+            return answerResponseDTO;
+        }
 
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
 
@@ -112,8 +119,12 @@ public class GameSessionService {
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
+        questionDTO.setExpiresInSeconds(session.getQuestionTimeLimitInSeconds());
 
-        return questionResponseMapper.toQuestionResonse(questionDTO);
+        session.setQuestionStartTime(LocalDateTime.now());
+        gameSessionRepository.save(session);
+
+        return questionResponseMapper.toQuestionResponse(questionDTO);
     }
 
     private int handleCorrectAnswerGoldReward(GameSessionEntity session) {

@@ -71,6 +71,12 @@ public class GameSessionEntity {
     private boolean isCompleted;
     private int correctAnswerCount = 0;
     private int incorrectAnswerCount = 0;
+    private LocalDateTime questionStartTime;
+    /**
+     * The time limit in second before the answer is marked as expired.
+     */
+    @Builder.Default
+    private int questionTimeLimitInSeconds = 15;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
