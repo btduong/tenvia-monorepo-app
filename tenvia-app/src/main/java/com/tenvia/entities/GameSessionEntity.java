@@ -97,4 +97,15 @@ public class GameSessionEntity {
         isCompleted = false;
     }
 
+    /***
+     * Increase the current question index.
+     */
+    public void advanceQuestionIndex() {
+        currentQuestionIndex++;
+        questionStartTime = null;
+        if (currentQuestionIndex >= questionIds.size()) {
+            isOver = true;
+        }
+    }
+
 }

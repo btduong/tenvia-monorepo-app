@@ -68,14 +68,12 @@ public class GameSessionService {
         return gameSessionMapper.toDTO(savedSession, questionDTOList);
     }
 
-
     public AnswerResponseDTO validateAnswer(UUID sessionId, Integer selectedOptionId) {
         GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
-        LocalDateTime questionStartTime = session.getQuestionStartTime();
-        if (LocalDateTime.now().isAfter(questionStartTime.plusSeconds(session.getQuestionTimeLimitInSeconds()))) {
+        if (isExpired(session)) {
             AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
             answerResponseDTO.setHasTimedOut(true);
             return answerResponseDTO;
@@ -110,10 +108,27 @@ public class GameSessionService {
         return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver());
     }
 
+    private static boolean isExpired(GameSessionEntity session) {
+        // If this is the 1st question.
+        if (session.getQuestionStartTime() == null) return false;
+
+        LocalDateTime questionStartTime = session.getQuestionStartTime();
+        return LocalDateTime.now().isAfter(questionStartTime.plusSeconds(session.getQuestionTimeLimitInSeconds()));
+    }
+
     public QuestionResponse getNextQuestion(UUID sessionId) {
         GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
+        }
+
+        // if current question has expired, increase the question index to next question.
+        if (isExpired(session)) {
+            session.advanceQuestionIndex();
+            // Check again in case this skipped question is the last question
+            if (session.isOver()) {
+                throw new GameSessionOverException(sessionId);
+            }
         }
 
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
