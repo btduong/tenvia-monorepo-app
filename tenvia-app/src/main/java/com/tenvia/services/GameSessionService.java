@@ -30,13 +30,13 @@ import java.util.UUID;
 @AllArgsConstructor
 public class GameSessionService {
 
-    private GameSessionRepository gameSessionRepository;
-    private UserService userService;
-    private RewardService rewardService;
-    private QuestionProvider questionProvider;
-    private GameSessionMapper gameSessionMapper;
-    private ScoreProducer scoreProducer;
-    private QuestionResponseMapper questionResponseMapper;
+    private final GameSessionRepository gameSessionRepository;
+    private final UserService userService;
+    private final RewardService rewardService;
+    private final QuestionProvider questionProvider;
+    private final GameSessionMapper gameSessionMapper;
+    private final ScoreProducer scoreProducer;
+    private final QuestionResponseMapper questionResponseMapper;
     private final SessionConfig sessionConfig;
 
 
