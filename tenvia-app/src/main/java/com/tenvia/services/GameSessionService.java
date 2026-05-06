@@ -47,7 +47,7 @@ public class GameSessionService {
         List<Integer> goldRewards = rewardService.easyReward(questionDTOList.size());
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::getId).toList();
         GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds, goldRewards);
-        gameSessionEntity.startSession(sessionConfig.getSessionDuration());
+        gameSessionEntity.startSession(sessionConfig.getDurationInSeconds());
         gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);

@@ -9,6 +9,6 @@ import org.springframework.context.annotation.Configuration;
 @Data // Need getter and setter to bind the properties
 public class SessionConfig {
 
-    private int sessionDuration;
+    private int durationInSeconds;
     private int questionTimeLimitInSeconds;
 }
