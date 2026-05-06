@@ -1,10 +1,11 @@
 package com.tenvia.services;
 
+import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.components.QuestionProvider;
+import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
-import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.mappers.GameSessionMapper;
@@ -48,6 +49,8 @@ class GameSessionServiceTest {
     private GameSessionMapper gameSessionMapper;
     @Mock
     private ScoreProducer scoreProducer;
+    @Mock
+    private SessionConfig sessionConfig;
 
     @InjectMocks
     private GameSessionService gameSessionService;

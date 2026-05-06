@@ -4,6 +4,7 @@ import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.components.QuestionProvider;
+import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
@@ -15,9 +16,8 @@ import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.mappers.QuestionResponseMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,32 +27,18 @@ import java.util.UUID;
 @Service
 @Transactional
 @Slf4j
+@AllArgsConstructor
 public class GameSessionService {
 
+    private final GameSessionRepository gameSessionRepository;
+    private final UserService userService;
+    private final RewardService rewardService;
+    private final QuestionProvider questionProvider;
+    private final GameSessionMapper gameSessionMapper;
+    private final ScoreProducer scoreProducer;
+    private final QuestionResponseMapper questionResponseMapper;
+    private final SessionConfig sessionConfig;
 
-    @Autowired
-    private GameSessionRepository gameSessionRepository;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private RewardService rewardService;
-
-    @Autowired
-    private QuestionProvider questionProvider;
-
-    @Autowired
-    private GameSessionMapper gameSessionMapper;
-
-    @Autowired
-    private ScoreProducer scoreProducer;
-
-    @Autowired
-    private QuestionResponseMapper questionResponseMapper;
-
-    @Value("${session.duration.in.seconds:900}")
-    private int sessionDuration;
 
     public GameSessionDTO createNewSession(Long userId, int limit) {
         List<QuestionDTO> questionDTOList = questionProvider.fetchRandomQuestions(limit);
@@ -61,21 +47,20 @@ public class GameSessionService {
         List<Integer> goldRewards = rewardService.easyReward(questionDTOList.size());
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::getId).toList();
         GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds, goldRewards);
-        gameSessionEntity.startSession(sessionDuration);
+        gameSessionEntity.startSession(sessionConfig.getSessionDuration());
+        gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
 
         return gameSessionMapper.toDTO(savedSession, questionDTOList);
     }
 
-
     public AnswerResponseDTO validateAnswer(UUID sessionId, Integer selectedOptionId) {
         GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
-        LocalDateTime questionStartTime = session.getQuestionStartTime();
-        if (LocalDateTime.now().isAfter(questionStartTime.plusSeconds(session.getQuestionTimeLimitInSeconds()))) {
+        if (isExpired(session)) {
             AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
             answerResponseDTO.setHasTimedOut(true);
             return answerResponseDTO;
@@ -110,16 +95,33 @@ public class GameSessionService {
         return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver());
     }
 
+    private static boolean isExpired(GameSessionEntity session) {
+        // If this is the 1st question.
+        if (session.getQuestionStartTime() == null) return false;
+
+        LocalDateTime questionStartTime = session.getQuestionStartTime();
+        return LocalDateTime.now().isAfter(questionStartTime.plusSeconds(session.getQuestionTimeLimitInSeconds()));
+    }
+
     public QuestionResponse getNextQuestion(UUID sessionId) {
         GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
 
+        // if current question has expired, increase the question index to next question.
+        if (isExpired(session)) {
+            session.advanceQuestionIndex();
+            // Check again in case this skipped question is the last question
+            if (session.isOver()) {
+                throw new GameSessionOverException(sessionId);
+            }
+        }
+
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
-        questionDTO.setExpiresInSeconds(session.getQuestionTimeLimitInSeconds());
+        questionDTO.setExpiresInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         session.setQuestionStartTime(LocalDateTime.now());
         gameSessionRepository.save(session);

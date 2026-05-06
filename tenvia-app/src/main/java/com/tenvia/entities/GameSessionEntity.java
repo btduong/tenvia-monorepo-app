@@ -75,8 +75,7 @@ public class GameSessionEntity {
     /**
      * The time limit in second before the answer is marked as expired.
      */
-    @Builder.Default
-    private int questionTimeLimitInSeconds = 15;
+    private int questionTimeLimitInSeconds;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -95,6 +94,17 @@ public class GameSessionEntity {
         startTime = LocalDateTime.now();
         endTime = startTime.plusSeconds(sessionDurationInSecond);
         isCompleted = false;
+    }
+
+    /***
+     * Increase the current question index.
+     */
+    public void advanceQuestionIndex() {
+        currentQuestionIndex++;
+        questionStartTime = null; // Reset the timestamp.
+        if (currentQuestionIndex >= questionIds.size()) {
+            isOver = true;
+        }
     }
 
 }
