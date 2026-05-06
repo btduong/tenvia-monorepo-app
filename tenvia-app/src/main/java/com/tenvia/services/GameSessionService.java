@@ -4,6 +4,7 @@ import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.components.QuestionProvider;
+import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
@@ -15,9 +16,8 @@ import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.mappers.QuestionResponseMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,32 +27,18 @@ import java.util.UUID;
 @Service
 @Transactional
 @Slf4j
+@AllArgsConstructor
 public class GameSessionService {
 
-
-    @Autowired
     private GameSessionRepository gameSessionRepository;
-
-    @Autowired
     private UserService userService;
-
-    @Autowired
     private RewardService rewardService;
-
-    @Autowired
     private QuestionProvider questionProvider;
-
-    @Autowired
     private GameSessionMapper gameSessionMapper;
-
-    @Autowired
     private ScoreProducer scoreProducer;
-
-    @Autowired
     private QuestionResponseMapper questionResponseMapper;
+    private final SessionConfig sessionConfig;
 
-    @Value("${session.duration.in.seconds:900}")
-    private int sessionDuration;
 
     public GameSessionDTO createNewSession(Long userId, int limit) {
         List<QuestionDTO> questionDTOList = questionProvider.fetchRandomQuestions(limit);
@@ -61,7 +47,8 @@ public class GameSessionService {
         List<Integer> goldRewards = rewardService.easyReward(questionDTOList.size());
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::getId).toList();
         GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds, goldRewards);
-        gameSessionEntity.startSession(sessionDuration);
+        gameSessionEntity.startSession(sessionConfig.getSessionDuration());
+        gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
 
@@ -134,7 +121,7 @@ public class GameSessionService {
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
-        questionDTO.setExpiresInSeconds(session.getQuestionTimeLimitInSeconds());
+        questionDTO.setExpiresInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         session.setQuestionStartTime(LocalDateTime.now());
         gameSessionRepository.save(session);
