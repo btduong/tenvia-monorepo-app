@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class LeaderboardService {
     @Autowired
     private LeaderboardRepository leaderboardRepository;
 
+    @Cacheable(value = "topScores")
     public List<LeaderboardDTO> getTopScores() {
         return leaderboardRepository.findTop10ByOrderByScoreDesc().stream()
                 .map(leaderboardScoreEntity -> LeaderboardDTO.builder()
