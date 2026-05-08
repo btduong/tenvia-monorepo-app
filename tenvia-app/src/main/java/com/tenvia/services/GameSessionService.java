@@ -89,9 +89,13 @@ public class GameSessionService {
             // Apply reward/bounty
             RewardDTO reward = session.getReward();
             if (reward != null) {
-                switch (reward.type()) {
-                    case GOLD -> newBalance += reward.amount();
-                    case POWER_UP -> inventoryService.addItem(session.getUser().getId(), PowerUpType.HAMMER, reward.amount());
+                String type = reward.getType();
+                int amount = reward.getAmount();
+                log.info("Saving the reward");
+                if (type.equals("GOLD")) {
+                    newBalance += amount;
+                } else if (type.equals("POWER_UP")) {
+                    inventoryService.addItem(session.getUser().getId(), PowerUpType.HAMMER, amount);
                 }
                 session.setReward(null); // remove the applied reward
             }
@@ -140,6 +144,7 @@ public class GameSessionService {
         questionDTO.setExpiresInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         RewardDTO rewardDTO = rewardEngine.generatedBounty();
+        log.info("rewardDTO {}", rewardDTO);
         session.setReward(rewardDTO);
 
         session.setQuestionStartTime(LocalDateTime.now());

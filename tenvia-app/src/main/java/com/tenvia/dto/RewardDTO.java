@@ -1,4 +1,14 @@
 package com.tenvia.dto;
 
-public record RewardDTO(RewardType type, int amount) {
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RewardDTO {
+    private String type;
+    private int amount;
 }
