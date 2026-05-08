@@ -1,6 +1,7 @@
 package com.tenvia.services;
 
 import com.tenvia.entities.UserEntity;
+import com.tenvia.exception.UserIdNotFoundException;
 import com.tenvia.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,7 @@ class UserServiceTest {
     @Test
     void findExistingUser_whenNotFound_expectException() {
         when(userRepository.findById(123L)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> userService.findUserById(123L));
+        assertThrows(UserIdNotFoundException.class, () -> userService.findUserById(123L));
     }
 
     private static UserEntity createTestUser(Long id, String username) {
