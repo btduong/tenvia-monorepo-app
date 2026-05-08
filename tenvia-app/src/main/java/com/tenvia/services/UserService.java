@@ -3,6 +3,7 @@ package com.tenvia.services;
 import com.tenvia.dto.UserDTO;
 import com.tenvia.entities.InventoryEntity;
 import com.tenvia.entities.UserEntity;
+import com.tenvia.exception.UserIdNotFoundException;
 import com.tenvia.repositories.InventoryRepository;
 import com.tenvia.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -35,7 +36,7 @@ public class UserService {
     }
 
     public UserEntity findUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("id not found"));
+        return userRepository.findById(id).orElseThrow(() -> new UserIdNotFoundException(id));
     }
 
     /**
@@ -47,7 +48,7 @@ public class UserService {
      */
     public int updateBalance(Long userId, int amount) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserIdNotFoundException(userId));
 
         // Calculate new balance
         int currentBalance = user.getBalance() != null ? user.getBalance() : 0;
