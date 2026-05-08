@@ -1,7 +1,5 @@
 package com.tenvia.dto;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import tools.jackson.databind.ObjectMapper;
@@ -17,7 +15,7 @@ public class RewardDTOConverter implements AttributeConverter<RewardDTO, String>
         if (rewardDTO == null) return null;
         try {
             return mapper.writeValueAsString(rewardDTO);
-        } catch (Exception e) { // Catches whatever new exception Jackson 3 throws
+        } catch (Exception e) {
             throw new IllegalArgumentException("Failed to serialize RewardDTO to JSON", e);
         }
     }
