@@ -1,14 +1,18 @@
 package com.tenvia.services;
 
+import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.components.QuestionProvider;
+import com.tenvia.components.RewardEngine;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
 import com.tenvia.dto.QuestionResponse;
+import com.tenvia.dto.QuestionRewardResponse;
+import com.tenvia.dto.RewardDTO;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.GameSessionOverException;
@@ -40,6 +44,8 @@ public class GameSessionService {
     private final ScoreProducer scoreProducer;
     private final QuestionResponseMapper questionResponseMapper;
     private final SessionConfig sessionConfig;
+    private final RewardEngine rewardEngine;
+    private final InventoryService inventoryService;
 
 
     public GameSessionDTO createNewSession(Long userId, int limit) {
@@ -80,6 +86,15 @@ public class GameSessionService {
             session.setScore(session.getScore() + 1);
             session.setCorrectAnswerCount(session.getCorrectAnswerCount() + 1);
             newBalance = handleCorrectAnswerGoldReward(session);
+            // Apply reward/bounty
+            RewardDTO reward = session.getReward();
+            if (reward != null) {
+                switch (reward.type()) {
+                    case GOLD -> newBalance += reward.amount();
+                    case POWER_UP -> inventoryService.addItem(session.getUser().getId(), PowerUpType.HAMMER, reward.amount());
+                }
+                session.setReward(null); // remove the applied reward
+            }
         } else {
             session.setIncorrectAnswerCount(session.getIncorrectAnswerCount() + 1);
         }
@@ -104,7 +119,7 @@ public class GameSessionService {
         return LocalDateTime.now().isAfter(questionStartTime.plusSeconds(session.getQuestionTimeLimitInSeconds()));
     }
 
-    public QuestionResponse getNextQuestion(UUID sessionId) {
+    public QuestionRewardResponse getNextQuestion(UUID sessionId) {
         GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
@@ -124,10 +139,14 @@ public class GameSessionService {
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
         questionDTO.setExpiresInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
+        RewardDTO rewardDTO = rewardEngine.generatedBounty();
+        session.setReward(rewardDTO);
+
         session.setQuestionStartTime(LocalDateTime.now());
         gameSessionRepository.save(session);
 
-        return questionResponseMapper.toQuestionResponse(questionDTO);
+        QuestionResponse questionResponse = questionResponseMapper.toQuestionResponse(questionDTO);
+        return new QuestionRewardResponse(questionResponse, rewardDTO);
     }
 
     private int handleCorrectAnswerGoldReward(GameSessionEntity session) {

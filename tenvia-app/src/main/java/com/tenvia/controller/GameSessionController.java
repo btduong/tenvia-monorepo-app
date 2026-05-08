@@ -4,6 +4,7 @@ import com.tenvia.dto.AnswerRequestDTO;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.QuestionResponse;
+import com.tenvia.dto.QuestionRewardResponse;
 import com.tenvia.services.GameSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +26,6 @@ public class GameSessionController {
     @Autowired
     private GameSessionService gameSessionService;
 
-
-
     @PostMapping("/start")
     public GameSessionDTO startNewSession(@RequestParam Long id, @RequestParam int limit) {
         return gameSessionService.createNewSession(id, limit);
@@ -45,7 +44,7 @@ public class GameSessionController {
     }
 
     @GetMapping("/{sessionId}/questions/next")
-    public QuestionResponse getNextQuestion(@PathVariable UUID sessionId) {
+    public QuestionRewardResponse getNextQuestion(@PathVariable UUID sessionId) {
         return gameSessionService.getNextQuestion(sessionId);
     }
 }

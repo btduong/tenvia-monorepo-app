@@ -46,6 +46,15 @@ public class GameSessionEntity {
     @Column(name = "session_id")
     private UUID id;
 
+//    @ManyToMany
+//    @JoinTable(
+//            name = "session_questions",
+//            joinColumns = @JoinColumn(name = "session_id"), // foreign key of the owner
+//            inverseJoinColumns = @JoinColumn(name = "question_id") //foreign key of the target
+//    )
+//    @OrderColumn(name = "question_order")// The 15 questions chosen for this specific game
+//    private List<QuestionEntity> questions;
+
     @ElementCollection // all are records are stored in separate table
     @CollectionTable(name = "session_question_ids", joinColumns = @JoinColumn(name = "session_id"))
     @Column(name = "question_id")
