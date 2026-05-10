@@ -21,7 +21,6 @@ public class GameSessionMapper {
         return GameSessionDTO.builder()
                 .id(entity.getId())
                 .score(entity.getScore())
-                .fiftyFiftyUsed(entity.isFiftyFiftyUsed())
                 .questions(questions)
                 .currentQuestionIndex(entity.getCurrentQuestionIndex())
                 .user(new UserDTO(user.getId(), user.getUsername(), user.getCreatedAt(), user.getBalance(), new HashMap<>()))

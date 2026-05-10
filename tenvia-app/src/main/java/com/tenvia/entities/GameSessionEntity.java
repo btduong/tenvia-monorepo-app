@@ -1,9 +1,12 @@
 package com.tenvia.entities;
 
+import com.tenvia.PowerUpType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,7 +40,6 @@ public class GameSessionEntity {
                 .questionIds(questionIds)
                 .goldRewards(rewards)
                 .currentQuestionIndex(0)
-                .fiftyFiftyUsed(false)
                 .build();
     }
 
@@ -50,8 +52,6 @@ public class GameSessionEntity {
     @CollectionTable(name = "session_question_ids", joinColumns = @JoinColumn(name = "session_id"))
     @Column(name = "question_id")
     private List<Long> questionIds;
-
-    private boolean fiftyFiftyUsed = false;
 
     private int currentQuestionIndex = 0;
 
@@ -83,6 +83,24 @@ public class GameSessionEntity {
     @Column(name = "reward_amount") // The name of the value column
     private List<Integer> goldRewards = new ArrayList<>();
 
+    /**
+     * The default maximum number of times power-up items can be used for a single question.
+     * Some gameplay mechanics may allow this value to be increased or decreased.
+     */
+    @Builder.Default
+    @Column(name = "current_question_powerup_limit")
+    private int powerUpLimit = 1;
+
+    /***
+     * A list of power-up items has been activated for the current question.
+     * This list size cannot exceed @link powerUpLimit
+     */
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "session_active_powerups", joinColumns = @JoinColumn(name = "session_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "powerup_type")
+    private List<PowerUpType> activePowerUps = new ArrayList<>();
+
     public void startSession(int sessionDurationInSecond) {
         startTime = LocalDateTime.now();
         endTime = startTime.plusSeconds(sessionDurationInSecond);
@@ -98,6 +116,21 @@ public class GameSessionEntity {
         if (currentQuestionIndex >= questionIds.size()) {
             isOver = true;
         }
+    }
+
+    /***
+     *
+     * @return true if power-up items has been used to the maximum limit.
+     */
+    public boolean hasReachedPowerUpLimit() {
+        return activePowerUps.size() >= powerUpLimit;
+    }
+
+    public void addActivatedPowerUp(PowerUpType powerUpType) {
+        if (hasReachedPowerUpLimit()) {
+            throw new IllegalStateException("Has reached max power-up item usage: " + powerUpLimit);
+        }
+        activePowerUps.add(powerUpType);
     }
 
 }

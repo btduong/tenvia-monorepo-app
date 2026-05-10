@@ -1,5 +1,6 @@
 package com.tenvia.services;
 
+import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
@@ -125,6 +126,8 @@ public class GameSessionService {
         questionDTO.setExpiresInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         session.setQuestionStartTime(LocalDateTime.now());
+        session.getActivePowerUps().clear(); // Reset power-up usage
+        session.setPowerUpLimit(1); // Reset to default usage
         gameSessionRepository.save(session);
 
         return questionResponseMapper.toQuestionResponse(questionDTO);
@@ -141,6 +144,8 @@ public class GameSessionService {
             throw new GameSessionOverException(sessionId);
         }
 
+        session.addActivatedPowerUp(PowerUpType.FIFTY_FIFTY);
+
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
@@ -153,11 +158,9 @@ public class GameSessionService {
                 .collect(Collectors.toList());
 
         Collections.shuffle(incorrectOptionIds);
-        List<Integer> optionIdsToRemove = incorrectOptionIds.stream().limit(2).toList();
 
-        session.setFiftyFiftyUsed(true);
 
-        return optionIdsToRemove;
+        return incorrectOptionIds.stream().limit(2).toList();
     }
 
     public Integer applyHammerOption(UUID sessionId) {
@@ -166,13 +169,16 @@ public class GameSessionService {
             throw new GameSessionOverException(sessionId);
         }
 
+        session.addActivatedPowerUp(PowerUpType.FIFTY_FIFTY);
+
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
 
         Integer correctOptionId = questionDTO.getCorrectOptionId();
-        List<Integer> incorrectOptions = questionDTO.getOptions().stream().filter(p -> !p.getId().equals(correctOptionId))
+        List<Integer> incorrectOptions = questionDTO.getOptions().stream()
                 .map(QuestionOptionDTO::getId)
+                .filter(id -> !id.equals(correctOptionId))
                 .toList();
 
 
