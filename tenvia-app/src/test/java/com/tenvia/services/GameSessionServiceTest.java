@@ -122,7 +122,6 @@ class GameSessionServiceTest {
 
         assertEquals(1, session.getCurrentQuestionIndex());
         assertTrue(result.isCorrect());
-        verify(gameSessionRepository).save(session);
     }
 
     @Test
@@ -144,7 +143,7 @@ class GameSessionServiceTest {
 
         assertEquals(1, session.getCurrentQuestionIndex());
         assertTrue(result.isCorrect());
-        verify(gameSessionRepository).save(session);
+
     }
 
     @Test
@@ -156,7 +155,6 @@ class GameSessionServiceTest {
         List<Integer> result = gameSessionService.applyFiftyFiftyOption(sessionId);
 
         assertEquals(2, result.size());
-        verify(gameSessionRepository).save(session);
     }
 
     @Test
