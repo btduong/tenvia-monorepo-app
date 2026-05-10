@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AnswerResponseDTO {
 
-    public static AnswerResponseDTO from(boolean isCorrect, QuestionDTO questionDTO, GameSessionSummary gameSessionSummary, int newBalance, boolean sessionIsOver) {
+    public static AnswerResponseDTO from(boolean isCorrect, QuestionDTO questionDTO, GameSessionSummary gameSessionSummary, int newBalance, boolean sessionIsOver, int currentQuestionIndex) {
         AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
         answerResponseDTO.setCorrect(isCorrect);
         answerResponseDTO.setCorrectLetter(questionDTO.getCorrectLetter());
@@ -19,6 +19,7 @@ public class AnswerResponseDTO {
         answerResponseDTO.setNewBalance(newBalance);
         answerResponseDTO.setGameOver(sessionIsOver);
         answerResponseDTO.setSummary(gameSessionSummary);
+        answerResponseDTO.setCurrentQuestionIndex(currentQuestionIndex);
         return answerResponseDTO;
     }
 
@@ -29,6 +30,7 @@ public class AnswerResponseDTO {
     private boolean isGameOver;
     private GameSessionSummary summary;
     private boolean hasTimedOut;
+    private int currentQuestionIndex;
 
     @JsonProperty("isGameOver")
     public boolean isGameOver() {

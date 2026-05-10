@@ -21,8 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -66,7 +68,8 @@ public class GameSessionService {
             return answerResponseDTO;
         }
 
-        Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
+        int currentQuestionIndex = session.getCurrentQuestionIndex();
+        Long currentQuestionId = session.getQuestionIds().get(currentQuestionIndex);
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
         boolean isCorrect = questionDTO.getCorrectOptionId().equals(selectedOptionId);
@@ -82,17 +85,15 @@ public class GameSessionService {
         }
 
         // Move on to the next question
-        int nextQuestionIndex = session.getCurrentQuestionIndex() + 1;
-        session.setCurrentQuestionIndex(nextQuestionIndex);
+        session.advanceQuestionIndex();
 
-        if (nextQuestionIndex == session.getQuestionIds().size()) {
-            finishSession(sessionId);
+        if (session.isOver()) {
+            RewardResult rewardResult = finishSession(session);
+            newBalance = rewardResult.newTotalBalance();
         }
 
-        gameSessionRepository.save(session);
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount());
-
-        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver());
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex);
     }
 
     private static boolean isExpired(GameSessionEntity session) {
@@ -114,12 +115,12 @@ public class GameSessionService {
             session.advanceQuestionIndex();
             // Check again in case this skipped question is the last question
             if (session.isOver()) {
+                finishSession(session);
                 throw new GameSessionOverException(sessionId);
             }
         }
 
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
-
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
         questionDTO.setExpiresInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
@@ -146,16 +147,17 @@ public class GameSessionService {
 
         Integer correctOptionId = questionDTO.getCorrectOptionId();
 
-        List<Integer> incorrectOptions = questionDTO.getOptions().stream().filter(p -> !p.getId().equals(correctOptionId))
-                .limit(2L)
+        List<Integer> incorrectOptionIds = questionDTO.getOptions().stream()
                 .map(QuestionOptionDTO::getId)
-                .toList();
+                .filter(id -> !id.equals(correctOptionId))
+                .collect(Collectors.toList());
 
+        Collections.shuffle(incorrectOptionIds);
+        List<Integer> optionIdsToRemove = incorrectOptionIds.stream().limit(2).toList();
 
         session.setFiftyFiftyUsed(true);
-        gameSessionRepository.save(session);
 
-        return incorrectOptions;
+        return optionIdsToRemove;
     }
 
     public Integer applyHammerOption(UUID sessionId) {
@@ -178,14 +180,7 @@ public class GameSessionService {
         return incorrectOptions.get(0);
     }
 
-    private RewardResult finishSession(UUID sessionId) {
-        GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow();
-        if (session.isOver()) throw new GameSessionOverException(sessionId);
-
-        // No need to do: gameSessionRepository.save(session)
-        // because Spring Data JPA has Automatic Dirty Checking
-        // when @Transactional is used
-        session.setOver(true);
+    private RewardResult finishSession(GameSessionEntity session) {
 
         int goldEarned = rewardService.calculateGold(session);
         int newBalance = userService.updateBalance(session.getUser().getId(), goldEarned);
@@ -197,6 +192,8 @@ public class GameSessionService {
                 .build();
         log.debug("Submitting score {} for user: {}", scoreSubmittedEvent.getScore(), scoreSubmittedEvent.getUserName());
 
+        // If RabbitMQ is down then this finishSession will roll back and user's reward will not get updated.
+        // The best: implement the Outbox pattern
         scoreProducer.sendUpdate(scoreSubmittedEvent);
 
         return new RewardResult(session.getScore(), goldEarned, newBalance);

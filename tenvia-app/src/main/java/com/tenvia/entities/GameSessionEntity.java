@@ -13,8 +13,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,8 +26,9 @@ import java.util.UUID;
 @Table(name = "game_session")
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
+@Getter
+@Setter
 public class GameSessionEntity {
 
     public static GameSessionEntity createInitial(UserEntity user, List<Long> questionIds, List<Integer> rewards) {
@@ -41,17 +43,8 @@ public class GameSessionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "sessions_id")
+    @Column(name = "session_id")
     private UUID id;
-
-//    @ManyToMany
-//    @JoinTable(
-//            name = "session_questions",
-//            joinColumns = @JoinColumn(name = "session_id"), // foreign key of the owner
-//            inverseJoinColumns = @JoinColumn(name = "question_id") //foreign key of the target
-//    )
-//    @OrderColumn(name = "question_order")// The 15 questions chosen for this specific game
-//    private List<QuestionEntity> questions;
 
     @ElementCollection // all are records are stored in separate table
     @CollectionTable(name = "session_question_ids", joinColumns = @JoinColumn(name = "session_id"))
