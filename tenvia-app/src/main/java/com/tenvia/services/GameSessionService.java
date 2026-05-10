@@ -9,6 +9,7 @@ import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
+import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.dto.QuestionResponse;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
@@ -138,7 +139,7 @@ public class GameSessionService {
         return rewardService.grantGold(session.getUser().getId(), amount);
     }
 
-    public List<Integer> applyFiftyFiftyOption(UUID sessionId) {
+    public AppliedEffectResult applyFiftyFiftyOption(UUID sessionId) {
         GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
@@ -159,11 +160,10 @@ public class GameSessionService {
 
         Collections.shuffle(incorrectOptionIds);
 
-
-        return incorrectOptionIds.stream().limit(2).toList();
+        return new AppliedEffectResult(incorrectOptionIds.stream().limit(2).toList(), !session.hasReachedPowerUpLimit(), PowerUpType.FIFTY_FIFTY);
     }
 
-    public Integer applyHammerOption(UUID sessionId) {
+    public AppliedEffectResult applyHammerOption(UUID sessionId) {
         GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
@@ -183,7 +183,7 @@ public class GameSessionService {
 
 
         // Pick the first incorrect option
-        return incorrectOptions.get(0);
+        return new AppliedEffectResult(List.of(incorrectOptions.get(0)), !session.hasReachedPowerUpLimit(), PowerUpType.HAMMER);
     }
 
     private RewardResult finishSession(GameSessionEntity session) {

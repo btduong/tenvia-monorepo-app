@@ -7,6 +7,7 @@ import com.tenvia.components.QuestionProvider;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
+import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.mappers.GameSessionMapper;
@@ -24,7 +25,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -152,9 +152,9 @@ class GameSessionServiceTest {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(questionProvider.fetchQuestionById(1L)).thenReturn(questionDTO);
 
-        List<Integer> result = gameSessionService.applyFiftyFiftyOption(sessionId);
+        AppliedEffectResult result = gameSessionService.applyFiftyFiftyOption(sessionId);
 
-        assertEquals(2, result.size());
+        assertEquals(List.of(2,3), result.removeOptionIds());
     }
 
     @Test
@@ -162,9 +162,8 @@ class GameSessionServiceTest {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(questionProvider.fetchQuestionById(1L)).thenReturn(questionDTO);
 
-        Integer result = gameSessionService.applyHammerOption(sessionId);
-
-        assertEquals(2, result.intValue());
+        AppliedEffectResult result = gameSessionService.applyHammerOption(sessionId);
+        assertEquals(List.of(2), result.removeOptionIds());
     }
 
     @Test
@@ -195,6 +194,4 @@ class GameSessionServiceTest {
         assertTrue(session.isOver());
         assertTrue(result.isGameOver());
     }
-
-
 }

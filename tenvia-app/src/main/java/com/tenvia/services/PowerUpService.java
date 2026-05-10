@@ -1,12 +1,12 @@
 package com.tenvia.services;
 
 import com.tenvia.PowerUpType;
+import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,9 +28,9 @@ public class PowerUpService {
     public PowerUpResponse applyPowerUp(Long userId, UUID sessionId, PowerUpType type) {
         inventoryService.consumeItem(userId, type);
 
-        PowerUpEffect effectData = switch (type) {
-            case FIFTY_FIFTY -> new FiftyFiftyEffect(gameSessionService.applyFiftyFiftyOption(sessionId));
-            case HAMMER ->  new HammerEffect(List.of(gameSessionService.applyHammerOption(sessionId)));
+        AppliedEffectResult effectData = switch (type) {
+            case FIFTY_FIFTY -> gameSessionService.applyFiftyFiftyOption(sessionId);
+            case HAMMER ->  gameSessionService.applyHammerOption(sessionId);
             default -> throw new IllegalArgumentException("Unknown PowerUp: " + type);
         };
 
