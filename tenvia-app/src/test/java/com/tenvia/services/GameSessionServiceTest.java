@@ -1,11 +1,13 @@
 package com.tenvia.services;
 
+import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.components.QuestionProvider;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
+import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.mappers.GameSessionMapper;
@@ -17,12 +19,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,11 +82,11 @@ class GameSessionServiceTest {
         session = GameSessionEntity.builder()
                 .id(sessionId)
                 .questionIds(List.of(1L, 2L))
-                .fiftyFiftyUsed(false)
                 .currentQuestionIndex(0)
                 .isOver(false)
                 .user(userEntity)
                 .goldRewards(List.of(1,2,3))
+                .activePowerUps(new ArrayList<>())
                 .build();
     }
 
@@ -101,7 +103,6 @@ class GameSessionServiceTest {
         GameSessionDTO newSession = gameSessionService.createNewSession(1L, 1);
 
         assertEquals(0, newSession.getScore());
-        assertFalse(newSession.isFiftyFiftyUsed());
         assertEquals(0, newSession.getCurrentQuestionIndex());
         assertEquals(1, newSession.getQuestions().size());
         verify(gameSessionRepository).save(isA(GameSessionEntity.class));
@@ -147,24 +148,38 @@ class GameSessionServiceTest {
     }
 
     @Test
-    void applyFiftyFiftyOption_expectTwo() {
+    void applyFiftyFiftyOption_expectTwoIds() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(questionProvider.fetchQuestionById(1L)).thenReturn(questionDTO);
 
+        AppliedEffectResult result = gameSessionService.applyFiftyFiftyOption(sessionId);
 
-        List<Integer> result = gameSessionService.applyFiftyFiftyOption(sessionId);
-
-        assertEquals(2, result.size());
+        assertEquals(List.of(2,3), result.removeOptionIds());
     }
 
     @Test
-    void applyFiftyFiftyOption_expectException() {
-        session.setFiftyFiftyUsed(true);
+    void applyHammerOption_expectOneId() {
+        when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
+        when(questionProvider.fetchQuestionById(1L)).thenReturn(questionDTO);
+
+        AppliedEffectResult result = gameSessionService.applyHammerOption(sessionId);
+        assertEquals(List.of(2), result.removeOptionIds());
+    }
+
+    @Test
+    void applyFiftyFiftyOption_expectException_whenMaxUsageReached() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
 
-        assertThrows(RuntimeException.class, () -> {
-            gameSessionService.applyFiftyFiftyOption(sessionId);
-        });
+        session.getActivePowerUps().add(PowerUpType.FIFTY_FIFTY);
+        assertThrows(IllegalStateException.class, () -> gameSessionService.applyFiftyFiftyOption(sessionId));
+    }
+
+    @Test
+    void applyHammer_expectException_whenMaxUsageReached() {
+        when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
+
+        session.getActivePowerUps().add(PowerUpType.HAMMER);
+        assertThrows(IllegalStateException.class, () -> gameSessionService.applyHammerOption(sessionId));
     }
 
     @Test

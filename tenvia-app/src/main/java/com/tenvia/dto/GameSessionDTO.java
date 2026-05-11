@@ -16,7 +16,6 @@ import java.util.UUID;
 public class GameSessionDTO {
 
     private List<QuestionDTO> questions;
-    private boolean fiftyFiftyUsed = false;
     private int currentQuestionIndex = 0;
     private int score = 0;
     private UUID id;

@@ -38,12 +38,6 @@ public class GameSessionController {
         return ResponseEntity.ok(answerResponseDTO);
     }
 
-    @PostMapping("/{sessionId}/{id}/fifty-fifty")
-    public ResponseEntity<List<Integer>> getFiftyFifty(@PathVariable UUID sessionId, @PathVariable Integer id) {
-        List<Integer> fiftyFiftyIds = gameSessionService.applyFiftyFiftyOption(sessionId);
-        return ResponseEntity.ok(fiftyFiftyIds);
-    }
-
     @GetMapping("/{sessionId}/questions/next")
     public QuestionResponse getNextQuestion(@PathVariable UUID sessionId) {
         return gameSessionService.getNextQuestion(sessionId);
