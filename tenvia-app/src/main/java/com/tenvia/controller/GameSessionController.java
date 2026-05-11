@@ -42,4 +42,10 @@ public class GameSessionController {
     public QuestionResponse getNextQuestion(@PathVariable UUID sessionId) {
         return gameSessionService.getNextQuestion(sessionId);
     }
+
+    @PostMapping("/{sessionId}/abandon")
+    public ResponseEntity<Void> abandonSession(@PathVariable UUID sessionId) {
+        gameSessionService.abandonSession(sessionId);
+        return ResponseEntity.ok().build();
+    }
 }

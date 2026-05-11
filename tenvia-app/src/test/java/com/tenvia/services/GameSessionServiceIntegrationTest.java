@@ -15,11 +15,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -35,8 +37,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
+/**
+ * The test is using the MockMvc to send a fake http request for the session abandon test and it's simpler than using a WebTestClient. For several reasons:
+ * - the test thread is one that do .save(session) but it does not commit it
+ * - the HTTP request from WebTestClient is real but in a separate HTTP thread, going through the network stack; but it cannot see the session because of Transactional enforces isolation
+ * The result is the test fail due to session not found.
+ * By using MockMVc, it forces all the interaction on the test thread so everything is visible including the session.
+ */
+@AutoConfigureMockMvc
 @Testcontainers
 @ContextConfiguration(classes = TenviaApplication.class)
 @SpringBootTest
@@ -66,6 +78,8 @@ class GameSessionServiceIntegrationTest {
 
     @Autowired
     private SessionConfig sessionConfig;
+    @Autowired
+    private MockMvc mockMvc;
 
     private UUID activeSessionId;
     private UserEntity userEntity;
@@ -139,5 +153,13 @@ class GameSessionServiceIntegrationTest {
         // Validate
         AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(activeSessionId, 100);
         assertTrue(answerResponseDTO.isHasTimedOut());
+    }
+
+    @Test
+    void expectAbandonSessionSuccessfully() throws Exception {
+        mockMvc.perform(post("/sessions/{sessionId}/abandon", activeSessionId.toString()))
+                .andExpect(status().isOk()); // Assert HTTP 200
+        GameSessionEntity abandonedSession = gameSessionRepository.findById(session.getId()).get();
+        assertTrue(abandonedSession.isOver());
     }
 }
