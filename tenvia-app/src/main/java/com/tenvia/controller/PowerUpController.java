@@ -1,7 +1,7 @@
 package com.tenvia.controller;
 
 import com.tenvia.PowerUpType;
-import com.tenvia.services.PowerUpResponse;
+import com.tenvia.dto.PowerUpResponseDTO;
 import com.tenvia.services.PowerUpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +20,9 @@ public class PowerUpController {
     private PowerUpService powerUpService;
 
     @PostMapping("/use")
-    public ResponseEntity<PowerUpResponse> usePowerUp(@RequestParam PowerUpType type, @RequestParam Long userId, @RequestParam UUID sessionId) {
-        PowerUpResponse powerUpResponse = powerUpService.applyPowerUp(userId, sessionId, type);
-        return ResponseEntity.ok(powerUpResponse);
+    public ResponseEntity<PowerUpResponseDTO> usePowerUp(@RequestParam PowerUpType type, @RequestParam Long userId, @RequestParam UUID sessionId) {
+        PowerUpResponseDTO powerUpResponseDTO = powerUpService.applyPowerUp(userId, sessionId, type);
+        return ResponseEntity.ok(powerUpResponseDTO);
     }
 
 

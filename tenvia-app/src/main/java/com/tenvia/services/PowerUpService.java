@@ -2,6 +2,7 @@ package com.tenvia.services;
 
 import com.tenvia.PowerUpType;
 import com.tenvia.dto.AppliedEffectResult;
+import com.tenvia.dto.PowerUpResponseDTO;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class PowerUpService {
     private GameSessionRepository gameSessionRepository;
 
     @Transactional
-    public PowerUpResponse applyPowerUp(Long userId, UUID sessionId, PowerUpType type) {
+    public PowerUpResponseDTO applyPowerUp(Long userId, UUID sessionId, PowerUpType type) {
         inventoryService.consumeItem(userId, type);
 
         AppliedEffectResult effectData = switch (type) {
@@ -34,6 +35,6 @@ public class PowerUpService {
             default -> throw new IllegalArgumentException("Unknown PowerUp: " + type);
         };
 
-        return new PowerUpResponse(userService.getUserById(userId), effectData);
+        return new PowerUpResponseDTO(userService.getUserById(userId), effectData);
     }
 }

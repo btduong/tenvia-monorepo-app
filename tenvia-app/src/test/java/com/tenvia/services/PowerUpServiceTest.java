@@ -2,6 +2,7 @@ package com.tenvia.services;
 
 import com.tenvia.PowerUpType;
 import com.tenvia.dto.AppliedEffectResult;
+import com.tenvia.dto.PowerUpResponseDTO;
 import com.tenvia.dto.UserDTO;
 import com.tenvia.repositories.GameSessionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,42 +34,42 @@ class PowerUpServiceTest {
     @InjectMocks
     private PowerUpService powerUpService;
 
+    private Long userId;
+    private UUID sessionId;
+    private UserDTO userDTO;
+
     @BeforeEach
     public void setUp() {
-
+        userId = 1L;
+        sessionId = UUID.randomUUID();
+        userDTO = new UserDTO(1L, "Bob", LocalDateTime.now(), 0, new HashMap<>());
     }
 
     @Test
     void canApply_HammerPowerUp() {
-        Long userId = 1L;
-        UUID sessionId = UUID.randomUUID();
-        UserDTO userDTO = new UserDTO(1L, "Bob", LocalDateTime.now(), 0, new HashMap<>());
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult(List.of(666), true, PowerUpType.HAMMER);
         when(gameSessionService.applyHammerOption(sessionId)).thenReturn(appliedEffectResult);
         when(userService.getUserById(userId)).thenReturn(userDTO);
 
-        PowerUpResponse result = powerUpService.applyPowerUp(userId, sessionId, PowerUpType.HAMMER);
-        assertEquals(result.updatedUser().username(), "Bob");
-        assertEquals(result.updatedUser().id(), 1L);
-        assertEquals(result.effectResult().appliedPowerUp(), PowerUpType.HAMMER);
-        assertEquals(result.effectResult().canUsePowerUps(), true);
+        PowerUpResponseDTO result = powerUpService.applyPowerUp(userId, sessionId, PowerUpType.HAMMER);
+        assertEquals("Bob", result.updatedUser().username());
+        assertEquals(1L, result.updatedUser().id());
+        assertEquals(PowerUpType.HAMMER, result.effectResult().appliedPowerUp());
+        assertTrue(result.effectResult().canUsePowerUps());
         assertEquals(result.effectResult().removeOptionIds(), List.of(666));
     }
 
     @Test
     void canApply_FiftyFiftyPowerUp() {
-        Long userId = 1L;
-        UUID sessionId = UUID.randomUUID();
-        UserDTO userDTO = new UserDTO(1L, "Bob", LocalDateTime.now(), 0, new HashMap<>());
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult(List.of(10, 20), true, PowerUpType.FIFTY_FIFTY);
         when(gameSessionService.applyFiftyFiftyOption(sessionId)).thenReturn(appliedEffectResult);
         when(userService.getUserById(userId)).thenReturn(userDTO);
 
-        PowerUpResponse result = powerUpService.applyPowerUp(userId, sessionId, PowerUpType.FIFTY_FIFTY);
-        assertEquals(result.updatedUser().username(), "Bob");
-        assertEquals(result.updatedUser().id(), 1L);
-        assertEquals(result.effectResult().appliedPowerUp(), PowerUpType.FIFTY_FIFTY);
-        assertEquals(result.effectResult().canUsePowerUps(), true);
+        PowerUpResponseDTO result = powerUpService.applyPowerUp(userId, sessionId, PowerUpType.FIFTY_FIFTY);
+        assertEquals("Bob", result.updatedUser().username());
+        assertEquals(1L, result.updatedUser().id());
+        assertEquals(PowerUpType.FIFTY_FIFTY, result.effectResult().appliedPowerUp());
+        assertTrue(result.effectResult().canUsePowerUps());
         assertEquals(result.effectResult().removeOptionIds(), List.of(10, 20));
 
     }

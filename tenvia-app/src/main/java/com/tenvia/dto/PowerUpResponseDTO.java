@@ -1,6 +1,3 @@
-package com.tenvia.services;
+package com.tenvia.dto;
 
-import com.tenvia.dto.AppliedEffectResult;
-import com.tenvia.dto.UserDTO;
-
-public record PowerUpResponse (UserDTO updatedUser, AppliedEffectResult effectResult) {}
+public record PowerUpResponseDTO(UserDTO updatedUser, AppliedEffectResult effectResult) {}
