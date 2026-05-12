@@ -59,6 +59,17 @@ public class GameSessionService {
         return gameSessionMapper.toDTO(savedSession, questionDTOList);
     }
 
+    public void abandonSession(UUID sessionId) {
+        GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
+
+        if (session.isOver()) {
+            return;
+        }
+
+        session.setOver(true);
+        log.info("Session: {} has successfully abadoned", sessionId);
+    }
+
     public AnswerResponseDTO validateAnswer(UUID sessionId, Integer selectedOptionId) {
         GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
         if (session.isOver()) {
