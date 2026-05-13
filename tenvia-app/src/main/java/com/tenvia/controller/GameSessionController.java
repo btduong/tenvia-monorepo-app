@@ -50,9 +50,4 @@ public class GameSessionController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{sessionId}/swap")
-    public QuestionResponse swapRandomQuestion(@PathVariable UUID sessionId) {
-        return gameSessionService.swapQuestion(sessionId);
-    }
-
 }
