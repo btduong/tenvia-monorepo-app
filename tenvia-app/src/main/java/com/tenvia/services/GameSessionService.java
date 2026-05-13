@@ -140,6 +140,14 @@ public class GameSessionService {
         return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
     }
 
+    public QuestionResponse swapQuestion(UUID sessionId) {
+        GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
+        QuestionDTO questionDTO = questionProvider.swapRandomQuestion(session.getQuestionIds());
+        session.swapCurrentQuestion(questionDTO.getId());
+        return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+
+    }
+
     private int handleCorrectAnswerGoldReward(GameSessionEntity session) {
         int amount = session.getGoldRewards().get(session.getCurrentQuestionIndex());
         return rewardService.grantGold(session.getUser().getId(), amount);

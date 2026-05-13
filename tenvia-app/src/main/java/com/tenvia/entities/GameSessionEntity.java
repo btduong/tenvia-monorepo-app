@@ -1,6 +1,7 @@
 package com.tenvia.entities;
 
 import com.tenvia.PowerUpType;
+import com.tenvia.exception.GameSessionOverException;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -137,6 +138,15 @@ public class GameSessionEntity {
         questionStartTime = LocalDateTime.now();
         activePowerUps.clear();
         powerUpLimit = 1;
+    }
+
+    public void swapCurrentQuestion(Long newQuestionId) {
+        if (isOver) {
+            throw new GameSessionOverException(id);
+        }
+
+        questionIds.set(currentQuestionIndex, newQuestionId);
+        startNewQuestion();
     }
 
 }

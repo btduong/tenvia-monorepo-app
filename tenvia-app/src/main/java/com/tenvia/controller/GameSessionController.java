@@ -5,6 +5,7 @@ import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.QuestionResponse;
 import com.tenvia.services.GameSessionService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,4 +49,10 @@ public class GameSessionController {
         gameSessionService.abandonSession(sessionId);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{sessionId}/swap")
+    public QuestionResponse swapRandomQuestion(@PathVariable UUID sessionId) {
+        return gameSessionService.swapQuestion(sessionId);
+    }
+
 }
