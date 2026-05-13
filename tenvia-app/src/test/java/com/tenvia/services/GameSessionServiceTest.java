@@ -75,7 +75,10 @@ class GameSessionServiceTest {
         QuestionOptionDTO qOption3 = new QuestionOptionDTO();
         qOption3.setId(3);
 
-        questionDTO = QuestionDTO.builder().correctOptionId(1).options(List.of(qOption1, qOption2, qOption3)).build();
+        QuestionOptionDTO qOption4 = new QuestionOptionDTO();
+        qOption4.setId(4);
+
+        questionDTO = QuestionDTO.builder().correctOptionId(1).options(List.of(qOption1, qOption2, qOption3, qOption4)).build();
 
         userEntity = UserEntity.builder().id(1L).username("username").balance(10).build();
 
@@ -85,7 +88,7 @@ class GameSessionServiceTest {
                 .currentQuestionIndex(0)
                 .isOver(false)
                 .user(userEntity)
-                .goldRewards(List.of(1,2,3))
+                .goldRewards(List.of(1, 2, 3))
                 .activePowerUps(new ArrayList<>())
                 .build();
     }
@@ -154,7 +157,8 @@ class GameSessionServiceTest {
 
         AppliedEffectResult result = gameSessionService.applyFiftyFiftyOption(sessionId);
 
-        assertTrue(List.of(2,3).containsAll(result.removeOptionIds()));
+        List<QuestionOptionDTO> unavailableOptions = result.questionResponse().options().stream().filter(opt -> !opt.isAvailable()).toList();
+        assertEquals(2, unavailableOptions.size());
     }
 
     @Test
@@ -163,7 +167,9 @@ class GameSessionServiceTest {
         when(questionProvider.fetchQuestionById(1L)).thenReturn(questionDTO);
 
         AppliedEffectResult result = gameSessionService.applyHammerOption(sessionId);
-        assertEquals(List.of(2), result.removeOptionIds());
+
+        List<QuestionOptionDTO> unavailableOptions = result.questionResponse().options().stream().filter(opt -> !opt.isAvailable()).toList();
+        assertEquals(1, unavailableOptions.size());
     }
 
     @Test

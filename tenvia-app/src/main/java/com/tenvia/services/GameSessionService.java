@@ -156,17 +156,22 @@ public class GameSessionService {
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
-
         Integer correctOptionId = questionDTO.getCorrectOptionId();
 
-        List<Integer> incorrectOptionIds = questionDTO.getOptions().stream()
-                .map(QuestionOptionDTO::getId)
-                .filter(id -> !id.equals(correctOptionId))
+        List<QuestionOptionDTO> incorrectOptions = questionDTO.getOptions().stream()
+                .filter(opt -> !opt.getId().equals(correctOptionId))
                 .collect(Collectors.toList());
+        Collections.shuffle(incorrectOptions);
 
-        Collections.shuffle(incorrectOptionIds);
+        // Randomly pick 2 options to make them unavailable for selecting
+        for (int i = 1; i < incorrectOptions.size(); i++) {
+            incorrectOptions.get(i).setAvailable(false);
+        }
 
-        return new AppliedEffectResult(incorrectOptionIds.stream().limit(2).toList(), !session.hasReachedPowerUpLimit(), PowerUpType.FIFTY_FIFTY);
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+
+        // Should probably create a new DTO AppliedEffectQuestion
+        return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.FIFTY_FIFTY, questionResponse);
     }
 
     public AppliedEffectResult applyHammerOption(UUID sessionId) {
@@ -175,21 +180,25 @@ public class GameSessionService {
             throw new GameSessionOverException(sessionId);
         }
 
-        session.addActivatedPowerUp(PowerUpType.FIFTY_FIFTY);
+        session.addActivatedPowerUp(PowerUpType.HAMMER);
 
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
 
         Integer correctOptionId = questionDTO.getCorrectOptionId();
-        List<Integer> incorrectOptions = questionDTO.getOptions().stream()
-                .map(QuestionOptionDTO::getId)
-                .filter(id -> !id.equals(correctOptionId))
-                .toList();
+        List<QuestionOptionDTO> incorrectOptions = questionDTO.getOptions().stream()
+                .filter(opt -> !opt.getId().equals(correctOptionId))
+                .collect(Collectors.toList());
+        Collections.shuffle(incorrectOptions);
 
+        // Make on option unavailable
+        incorrectOptions.get(0).setAvailable(false);
+
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         // Pick the first incorrect option
-        return new AppliedEffectResult(List.of(incorrectOptions.get(0)), !session.hasReachedPowerUpLimit(), PowerUpType.HAMMER);
+        return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.HAMMER, questionResponse);
     }
 
     private RewardResult finishSession(GameSessionEntity session) {
