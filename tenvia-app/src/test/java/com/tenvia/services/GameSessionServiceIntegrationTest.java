@@ -136,6 +136,7 @@ class GameSessionServiceIntegrationTest {
         QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1).build();
         when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
         QuestionResponse nextQuestion = gameSessionService.getNextQuestion(activeSessionId);
+        assertEquals(0, nextQuestion.index());
 
         GameSessionEntity updatedSession = gameSessionRepository.findById(activeSessionId).get();
 

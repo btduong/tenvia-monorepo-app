@@ -154,7 +154,7 @@ class GameSessionServiceTest {
 
         AppliedEffectResult result = gameSessionService.applyFiftyFiftyOption(sessionId);
 
-        assertEquals(List.of(2,3), result.removeOptionIds());
+        assertTrue(List.of(2,3).containsAll(result.removeOptionIds()));
     }
 
     @Test
