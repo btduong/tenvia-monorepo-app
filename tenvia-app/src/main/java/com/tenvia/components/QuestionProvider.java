@@ -36,4 +36,12 @@ public class QuestionProvider {
                 .collectList()
                 .block();// flux web client is async, block -> syn request
     }
+
+    public QuestionDTO swapRandomQuestion(List<Long> excludedIds) {
+        return webClient.post().uri(uriBuilder -> uriBuilder.path("/questions/swap").build())
+                .bodyValue(excludedIds)
+                .retrieve()
+                .bodyToMono(QuestionDTO.class)
+                .block();
+    }
 }

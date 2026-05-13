@@ -29,6 +29,11 @@ public class QuestionService {
         return questionMapper.toQuestionDTO(questionEntity);
     }
 
+    public QuestionDTO swapQuestion(List<Long> excludedIds) {
+        QuestionEntity question = questionRepository.findRandomQuestionExcluding(excludedIds);
+        return questionMapper.toQuestionDTO(question);
+    }
+
     private List<QuestionEntity> fetchInitialQuestions() {
         List<QuestionEntity> randomQuestions = questionRepository.findRandomQuestions();
         if (randomQuestions.isEmpty()) {
