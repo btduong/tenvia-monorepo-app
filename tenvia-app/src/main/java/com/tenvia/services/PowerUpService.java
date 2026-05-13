@@ -32,6 +32,7 @@ public class PowerUpService {
         AppliedEffectResult effectData = switch (type) {
             case FIFTY_FIFTY -> gameSessionService.applyFiftyFiftyOption(sessionId);
             case HAMMER ->  gameSessionService.applyHammerOption(sessionId);
+            case SWAP_QUESTION -> gameSessionService.applySwapQuestionOption(sessionId);
             default -> throw new IllegalArgumentException("Unknown PowerUp: " + type);
         };
 
