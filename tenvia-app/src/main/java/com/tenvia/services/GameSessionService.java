@@ -7,15 +7,14 @@ import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.components.QuestionProvider;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
+import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
-import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.dto.QuestionResponse;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.GameSessionOverException;
 import com.tenvia.mappers.GameSessionMapper;
-import com.tenvia.mappers.QuestionResponseMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -40,7 +39,6 @@ public class GameSessionService {
     private final QuestionProvider questionProvider;
     private final GameSessionMapper gameSessionMapper;
     private final ScoreProducer scoreProducer;
-    private final QuestionResponseMapper questionResponseMapper;
     private final SessionConfig sessionConfig;
 
 
@@ -135,14 +133,11 @@ public class GameSessionService {
 
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
-        questionDTO.setExpiresInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
-        session.setQuestionStartTime(LocalDateTime.now());
-        session.getActivePowerUps().clear(); // Reset power-up usage
-        session.setPowerUpLimit(1); // Reset to default usage
+        session.startNewQuestion();
         gameSessionRepository.save(session);
 
-        return questionResponseMapper.toQuestionResponse(questionDTO);
+        return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
     }
 
     private int handleCorrectAnswerGoldReward(GameSessionEntity session) {

@@ -133,4 +133,10 @@ public class GameSessionEntity {
         activePowerUps.add(powerUpType);
     }
 
+    public void startNewQuestion() {
+        questionStartTime = LocalDateTime.now();
+        activePowerUps.clear();
+        powerUpLimit = 1;
+    }
+
 }
