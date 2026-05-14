@@ -14,6 +14,7 @@ import com.tenvia.dto.QuestionResponse;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.GameSessionOverException;
+import com.tenvia.exception.SessionNotFoundException;
 import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
@@ -58,7 +59,7 @@ public class GameSessionService {
     }
 
     public void abandonSession(UUID sessionId) {
-        GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
+        GameSessionEntity session = getSessionOrThrow(sessionId);
 
         if (session.isOver()) {
             return;
@@ -69,7 +70,7 @@ public class GameSessionService {
     }
 
     public AnswerResponseDTO validateAnswer(UUID sessionId, Integer selectedOptionId) {
-        GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
+        GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
@@ -116,7 +117,7 @@ public class GameSessionService {
     }
 
     public QuestionResponse getNextQuestion(UUID sessionId) {
-        GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
+        GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
@@ -146,7 +147,7 @@ public class GameSessionService {
     }
 
     public AppliedEffectResult applySwapQuestionOption(UUID sessionId) {
-        GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
+        GameSessionEntity session = getSessionOrThrow(sessionId);
         QuestionDTO questionDTO = questionProvider.swapRandomQuestion(session.getQuestionIds());
         session.swapCurrentQuestion(questionDTO.getId());
         QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
@@ -155,7 +156,7 @@ public class GameSessionService {
     }
 
     public AppliedEffectResult applyFiftyFiftyOption(UUID sessionId) {
-        GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
+        GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
@@ -184,7 +185,7 @@ public class GameSessionService {
     }
 
     public AppliedEffectResult applyHammerOption(UUID sessionId) {
-        GameSessionEntity session = gameSessionRepository.findById(sessionId).orElseThrow(() -> new RuntimeException("Session not found"));
+        GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
@@ -227,6 +228,10 @@ public class GameSessionService {
         scoreProducer.sendUpdate(scoreSubmittedEvent);
 
         return new RewardResult(session.getScore(), goldEarned, newBalance);
+    }
+
+    private GameSessionEntity getSessionOrThrow(UUID sessionId) {
+        return gameSessionRepository.findById(sessionId).orElseThrow(() -> new SessionNotFoundException("Session not found"));
     }
 
 }
