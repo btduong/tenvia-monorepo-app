@@ -23,8 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,7 @@ public class GameSessionService {
     private final GameSessionMapper gameSessionMapper;
     private final ScoreProducer scoreProducer;
     private final SessionConfig sessionConfig;
+    private final InventoryService inventoryService;
 
 
     public GameSessionDTO createNewSession(Long userId, int limit) {
@@ -49,10 +52,11 @@ public class GameSessionService {
         UserEntity user = userService.findUserById(userId);
         List<Integer> goldRewards = rewardService.easyReward(questionDTOList.size());
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::getId).toList();
-        GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds, goldRewards);
+        List<PowerUpType> itemRewards = generateItemRewards(questionIds.size());
+
+        GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds, goldRewards, itemRewards);
         gameSessionEntity.startSession(sessionConfig.getDurationInSeconds());
         gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
-
 
         return gameSessionMapper.toDTO(gameSessionEntity, questionDTOList);
     }
@@ -91,6 +95,12 @@ public class GameSessionService {
             session.setScore(session.getScore() + 1);
             session.setCorrectAnswerCount(session.getCorrectAnswerCount() + 1);
             newBalance = handleCorrectAnswerGoldReward(session);
+
+            // Grant items reward if any
+            PowerUpType powerUpItemReward = session.getPotentialReward();
+            if (powerUpItemReward != null) {
+                inventoryService.addItem(session.getUser().getId(), powerUpItemReward, 1);
+            }
         } else {
             session.setIncorrectAnswerCount(session.getIncorrectAnswerCount() + 1);
         }
@@ -230,6 +240,20 @@ public class GameSessionService {
 
     private GameSessionEntity getSessionOrThrow(UUID sessionId) {
         return gameSessionRepository.findById(sessionId).orElseThrow(() -> new SessionNotFoundException("Session not found"));
+    }
+
+    private List<PowerUpType> generateItemRewards(int size) {
+        List<PowerUpType> items = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < size; i++) {
+            double v = random.nextDouble();
+            if (v < .1) { // 10% to get  FIFTY_FIFTY
+                items.add(PowerUpType.FIFTY_FIFTY);
+            } else if (.1 < v  && v <= .2) {
+                items.add(PowerUpType.HAMMER);
+            }
+        }
+        return items;
     }
 
 }
