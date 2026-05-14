@@ -99,7 +99,6 @@ class GameSessionServiceTest {
         GameSessionDTO gameSession = GameSessionDTO.builder().score(0).currentQuestionIndex(0).questions(randomQuestions).build();
 
         when(userService.findUserById(1L)).thenReturn(userEntity);
-        when(gameSessionRepository.save(isA(GameSessionEntity.class))).thenReturn(session);
         when(questionProvider.fetchRandomQuestions(anyInt())).thenReturn(randomQuestions);
         when(gameSessionMapper.toDTO(any(), anyList())).thenReturn(gameSession);
 
