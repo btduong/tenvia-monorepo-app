@@ -56,7 +56,7 @@ class PowerUpServiceTest {
     @Test
     void canApply_HammerPowerUp() {
 
-        QuestionResponse questionResponse = new QuestionResponse(1L, "Q1", options, false, 15, 0);
+        QuestionResponse questionResponse = new QuestionResponse(1L, "Q1", options, false, 15, 0, null);
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult(true, PowerUpType.HAMMER, questionResponse);
         when(gameSessionService.applyHammerOption(sessionId)).thenReturn(appliedEffectResult);
         when(userService.getUserById(userId)).thenReturn(userDTO);
@@ -72,7 +72,7 @@ class PowerUpServiceTest {
     @Test
     void canApply_FiftyFiftyPowerUp() {
         options.get(0).setAvailable(false);
-        QuestionResponse questionResponse = new QuestionResponse(1L, "Q1", options, false, 15, 0);
+        QuestionResponse questionResponse = new QuestionResponse(1L, "Q1", options, false, 15, 0, null);
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult( true, PowerUpType.FIFTY_FIFTY, questionResponse);
         when(gameSessionService.applyFiftyFiftyOption(sessionId)).thenReturn(appliedEffectResult);
         when(userService.getUserById(userId)).thenReturn(userDTO);
