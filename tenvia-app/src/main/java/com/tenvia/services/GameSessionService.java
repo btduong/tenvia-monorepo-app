@@ -53,9 +53,8 @@ public class GameSessionService {
         gameSessionEntity.startSession(sessionConfig.getDurationInSeconds());
         gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
-        GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
 
-        return gameSessionMapper.toDTO(savedSession, questionDTOList);
+        return gameSessionMapper.toDTO(gameSessionEntity, questionDTOList);
     }
 
     public void abandonSession(UUID sessionId) {
@@ -136,7 +135,6 @@ public class GameSessionService {
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
 
         session.startNewQuestion();
-        gameSessionRepository.save(session);
 
         return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
     }

@@ -108,7 +108,6 @@ class GameSessionServiceTest {
         assertEquals(0, newSession.getScore());
         assertEquals(0, newSession.getCurrentQuestionIndex());
         assertEquals(1, newSession.getQuestions().size());
-        verify(gameSessionRepository).save(isA(GameSessionEntity.class));
     }
 
     @Test
