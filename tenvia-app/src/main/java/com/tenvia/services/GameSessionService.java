@@ -146,7 +146,7 @@ public class GameSessionService {
 
         session.startNewQuestion();
 
-        return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(),  session.getPotentialReward());
     }
 
     private int handleCorrectAnswerGoldReward(GameSessionEntity session) {
@@ -158,7 +158,7 @@ public class GameSessionService {
         GameSessionEntity session = getSessionOrThrow(sessionId);
         QuestionDTO questionDTO = questionProvider.swapRandomQuestion(session.getQuestionIds());
         session.swapCurrentQuestion(questionDTO.getId());
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(),  null);
 
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.SWAP_QUESTION, questionResponse);
     }
@@ -186,7 +186,7 @@ public class GameSessionService {
             incorrectOptions.get(i).setAvailable(false);
         }
 
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), null);
 
         // Should probably create a new DTO AppliedEffectQuestion
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.FIFTY_FIFTY, questionResponse);
@@ -213,7 +213,7 @@ public class GameSessionService {
         // Make on option unavailable
         incorrectOptions.get(0).setAvailable(false);
 
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), null);
 
         // Pick the first incorrect option
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.HAMMER, questionResponse);
@@ -251,6 +251,8 @@ public class GameSessionService {
                 items.add(PowerUpType.FIFTY_FIFTY);
             } else if (.1 < v  && v <= .2) {
                 items.add(PowerUpType.HAMMER);
+            } else if (.2 < v && v <= .3) {
+                items.add(PowerUpType.SWAP_QUESTION);
             }
         }
         return items;
