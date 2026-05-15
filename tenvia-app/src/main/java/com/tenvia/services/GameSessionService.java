@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -91,6 +92,8 @@ public class GameSessionService {
         boolean isCorrect = questionDTO.getCorrectOptionId().equals(selectedOptionId);
         // Handle correct case
         int newBalance = session.getUser().getBalance();
+        PowerUpType grantedItem = null;
+        Map<PowerUpType, Integer> updateInventory = null;
         if (isCorrect) {
             // Update Score
             session.setScore(session.getScore() + 1);
@@ -98,9 +101,9 @@ public class GameSessionService {
             newBalance = handleCorrectAnswerGoldReward(session);
 
             // Grant items reward if any
-            PowerUpType powerUpItemReward = session.getPotentialReward();
-            if (powerUpItemReward != null) {
-                inventoryService.addItem(session.getUser().getId(), powerUpItemReward, 1);
+            grantedItem = session.getPotentialReward();
+            if (grantedItem != null) {
+                updateInventory = inventoryService.addItem(session.getUser().getId(), grantedItem, 1);
             }
         } else {
             session.setIncorrectAnswerCount(session.getIncorrectAnswerCount() + 1);
@@ -115,7 +118,7 @@ public class GameSessionService {
         }
 
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount());
-        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex);
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex, grantedItem, updateInventory);
     }
 
     private static boolean isExpired(GameSessionEntity session) {

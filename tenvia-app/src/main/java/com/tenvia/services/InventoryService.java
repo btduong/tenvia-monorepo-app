@@ -48,29 +48,14 @@ public class InventoryService {
     }
 
     @Transactional
-    public void addItem(Long userId, PowerUpType type, int quantity) {
+    public Map<PowerUpType, Integer> addItem(Long userId, PowerUpType type, int quantity) {
         InventoryEntity inventory = getOrCreateInventory(userId);
 
         Map<PowerUpType, Integer> items = inventory.getItems();
         int currentCount = items.getOrDefault(type, 0);
 
         items.put(type, currentCount + quantity);
-
-    }
-
-    @Transactional // Jpa/Hibernate handles the update of game session entity
-    public void consumeItem(Long userId, PowerUpType type) {
-        InventoryEntity inventoryEntity = inventoryRepo.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("No inventory found for user: " + userId));
-
-        Integer currentTypeCount = inventoryEntity.getItems().get(type);
-        if (currentTypeCount < 0) {
-            throw new IllegalStateException("Power of: " + type + " is 0");
-
-        }
-        // consume it
-        inventoryEntity.getItems().put(type, currentTypeCount - 1);
-
+        return items;
     }
 
 }
