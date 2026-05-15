@@ -82,6 +82,7 @@ public class GameSessionService {
         if (isExpired(session)) {
             AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
             answerResponseDTO.setHasTimedOut(true);
+            session.advanceSkipCount();
             return answerResponseDTO;
         }
 
@@ -117,7 +118,7 @@ public class GameSessionService {
             newBalance = rewardResult.newTotalBalance();
         }
 
-        GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount());
+        GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount(), session.getSkipQuestionCount());
         return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex, grantedItem, updateInventory);
     }
 

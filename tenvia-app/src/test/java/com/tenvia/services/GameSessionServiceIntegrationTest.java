@@ -154,6 +154,7 @@ class GameSessionServiceIntegrationTest {
         // Validate
         AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(activeSessionId, 100);
         assertTrue(answerResponseDTO.isHasTimedOut());
+        assertEquals(1, session.getSkipQuestionCount());
     }
 
     @Test

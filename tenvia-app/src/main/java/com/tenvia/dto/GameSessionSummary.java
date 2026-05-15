@@ -1,5 +1,6 @@
 package com.tenvia.dto;
 
-public record GameSessionSummary(int score, int correctAnswerCount, int incorrectAnswerCount) {
-
-}
+public record GameSessionSummary(int score,
+                                 int correctAnswerCount,
+                                 int incorrectAnswerCount,
+                                 int skipQuestion) {}
