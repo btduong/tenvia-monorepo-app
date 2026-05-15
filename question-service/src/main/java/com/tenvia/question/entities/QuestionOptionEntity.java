@@ -1,6 +1,9 @@
 package com.tenvia.question.entities;
 
+import com.tenvia.common.types.QuestionTrait;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

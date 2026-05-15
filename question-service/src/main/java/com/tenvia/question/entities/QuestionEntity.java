@@ -1,7 +1,10 @@
 package com.tenvia.question.entities;
 
+import com.tenvia.common.types.QuestionTrait;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -43,6 +46,9 @@ public class QuestionEntity {
     private List<QuestionOptionEntity> options = new ArrayList<>();
 
     private String correctLetter;
+
+    @Enumerated(EnumType.STRING)
+    private QuestionTrait trait;
 
     /**
      * The explanation for the correct answer.
