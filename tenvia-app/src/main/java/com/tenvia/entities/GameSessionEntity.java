@@ -62,6 +62,10 @@ public class GameSessionEntity {
     private int currentQuestionIndex = 0;
 
     private int score = 0;
+    /**
+     * Tracking how many questions are skipped due to timed out.
+     */
+    private int skipQuestionCount = 0;
 
     private boolean isOver = false;
 
@@ -179,6 +183,10 @@ public class GameSessionEntity {
             return null;
         }
         return itemRewards.get(currentQuestionIndex);
+    }
+
+    public void advanceSkipCount() {
+        skipQuestionCount++;
     }
 
 }
