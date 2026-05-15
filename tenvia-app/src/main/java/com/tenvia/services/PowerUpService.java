@@ -27,7 +27,7 @@ public class PowerUpService {
 
     @Transactional
     public PowerUpResponseDTO applyPowerUp(Long userId, UUID sessionId, PowerUpType type) {
-        inventoryService.consumeItem(userId, type);
+        inventoryService.useItem(userId, type);
 
         AppliedEffectResult effectData = switch (type) {
             case FIFTY_FIFTY -> gameSessionService.applyFiftyFiftyOption(sessionId);
