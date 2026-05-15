@@ -90,7 +90,9 @@ class GameSessionServiceTest {
                 .user(userEntity)
                 .goldRewards(List.of(1, 2, 3))
                 .activePowerUps(new ArrayList<>())
+                .itemRewards(new ArrayList<>())
                 .build();
+
     }
 
     @Test

@@ -36,12 +36,13 @@ import java.util.UUID;
 @Setter
 public class GameSessionEntity {
 
-    public static GameSessionEntity createInitial(UserEntity user, List<Long> questionIds, List<Integer> rewards) {
+    public static GameSessionEntity createInitial(UserEntity user, List<Long> questionIds, List<Integer> goldRewards, List<PowerUpType> itemRewards) {
         return GameSessionEntity.builder()
                 .user(user)
                 .questionIds(questionIds)
-                .goldRewards(rewards)
+                .goldRewards(goldRewards)
                 .currentQuestionIndex(0)
+                .itemRewards(itemRewards)
                 .build();
     }
 
@@ -87,6 +88,18 @@ public class GameSessionEntity {
     )
     @Column(name = "reward_amount") // The name of the value column
     private List<Integer> goldRewards = new ArrayList<>();
+
+    /**
+     * Store a list of power up items as a string ie HAMMER, FIFTY_FIFTY, null.
+     */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "session_item_rewards",
+            joinColumns = @JoinColumn(name = "session_id")
+    )
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reward_item")
+    private List<PowerUpType> itemRewards = new ArrayList<>();
 
     /**
      * The default maximum number of times power-up items can be used for a single question.
@@ -144,6 +157,10 @@ public class GameSessionEntity {
         powerUpLimit = 1;
     }
 
+    /**
+     * Swap current question for a random question in the database that is not already in the list of existing ids.
+     * @param newQuestionId the id of the new question
+     */
     public void swapCurrentQuestion(Long newQuestionId) {
         if (isOver) {
             throw new GameSessionOverException(id);
@@ -151,6 +168,17 @@ public class GameSessionEntity {
 
         questionIds.set(currentQuestionIndex, newQuestionId);
         startNewQuestion();
+    }
+
+    /**
+     * Get the reward for the current question, if there is one.
+     * @return the PowerUpType or null for current question
+     */
+    public PowerUpType getPotentialReward() {
+        if (itemRewards == null || itemRewards.isEmpty() || currentQuestionIndex >= itemRewards.size()) {
+            return null;
+        }
+        return itemRewards.get(currentQuestionIndex);
     }
 
 }

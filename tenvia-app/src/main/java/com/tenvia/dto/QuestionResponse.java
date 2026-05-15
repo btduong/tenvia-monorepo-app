@@ -1,5 +1,6 @@
 package com.tenvia.dto;
 
+import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 
@@ -11,16 +12,18 @@ public record QuestionResponse(
         List<QuestionOptionDTO> options,
         boolean powerUpDisabled,
         Integer expiresInSecond,
-        Integer index) {
+        Integer index,
+        PowerUpType potentialReward) {
 
-    public static QuestionResponse from(QuestionDTO dto, int index, int expiresIn) {
+    public static QuestionResponse from(QuestionDTO dto, int index, int expiresIn, PowerUpType potentialReward) {
         return new QuestionResponse(
                 dto.getId(),
                 dto.getQuestionText(),
                 dto.getOptions(),
                 dto.isPowerUpDisabled(),
                 expiresIn,
-                index
+                index,
+                potentialReward
         );
     }
 }
