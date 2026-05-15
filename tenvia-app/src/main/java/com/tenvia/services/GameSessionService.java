@@ -84,6 +84,7 @@ public class GameSessionService {
         if (isExpired(session)) {
             AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
             answerResponseDTO.setHasTimedOut(true);
+            session.advanceSkipCount();
             return answerResponseDTO;
         }
 
