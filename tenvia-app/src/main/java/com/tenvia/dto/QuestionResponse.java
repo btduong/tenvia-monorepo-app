@@ -3,6 +3,7 @@ package com.tenvia.dto;
 import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
+import com.tenvia.common.types.QuestionPenaltyTpe;
 
 import java.util.List;
 
@@ -13,9 +14,10 @@ public record QuestionResponse(
         boolean powerUpDisabled,
         Integer expiresInSecond,
         Integer index,
-        PowerUpType potentialReward) {
+        PowerUpType potentialReward,
+        QuestionPenaltyTpe potentialPenalty) {
 
-    public static QuestionResponse from(QuestionDTO dto, int index, int expiresIn, PowerUpType potentialReward) {
+    public static QuestionResponse from(QuestionDTO dto, int index, int expiresIn, PowerUpType potentialReward, QuestionPenaltyTpe potentialPenalty) {
         return new QuestionResponse(
                 dto.getId(),
                 dto.getQuestionText(),
@@ -23,7 +25,8 @@ public record QuestionResponse(
                 dto.isPowerUpDisabled(),
                 expiresIn,
                 index,
-                potentialReward
+                potentialReward,
+                potentialPenalty
         );
     }
 }

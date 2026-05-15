@@ -29,7 +29,7 @@ public class SessionTerminatorIntegrationTest {
     public void expect_findAndTerminate_OneSession() {
 
         LocalDateTime now = LocalDateTime.now();
-        GameSessionEntity session1 = GameSessionEntity.createInitial(null, null, null, null);
+        GameSessionEntity session1 = GameSessionEntity.createInitial(null, null, null, null, null);
         session1.startSession(5);
         session1.setEndTime(now.minusHours(1));
         session1.setOver(false);
@@ -45,7 +45,7 @@ public class SessionTerminatorIntegrationTest {
     @Test
     public void expect_findAndTerminate_ZeroSession() {
         LocalDateTime now = LocalDateTime.now();
-        GameSessionEntity session1 = GameSessionEntity.createInitial(null, null, null, null);
+        GameSessionEntity session1 = GameSessionEntity.createInitial(null, null, null, null, null);
         session1.startSession(60);
         session1.setOver(false);
 

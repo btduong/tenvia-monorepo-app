@@ -1,6 +1,7 @@
 package com.tenvia.entities;
 
 import com.tenvia.PowerUpType;
+import com.tenvia.common.types.QuestionPenaltyTpe;
 import com.tenvia.exception.GameSessionOverException;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -36,13 +37,14 @@ import java.util.UUID;
 @Setter
 public class GameSessionEntity {
 
-    public static GameSessionEntity createInitial(UserEntity user, List<Long> questionIds, List<Integer> goldRewards, List<PowerUpType> itemRewards) {
+    public static GameSessionEntity createInitial(UserEntity user, List<Long> questionIds, List<Integer> goldRewards, List<PowerUpType> itemRewards, List<QuestionPenaltyTpe> penalties) {
         return GameSessionEntity.builder()
                 .user(user)
                 .questionIds(questionIds)
                 .goldRewards(goldRewards)
                 .currentQuestionIndex(0)
                 .itemRewards(itemRewards)
+                .penalties(penalties)
                 .build();
     }
 
@@ -104,6 +106,18 @@ public class GameSessionEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "reward_item")
     private List<PowerUpType> itemRewards = new ArrayList<>();
+
+    /**
+     * A list of penalty a question can incur.
+     */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "session_penalties",
+            joinColumns = @JoinColumn(name = "session_id")
+    )
+    @Enumerated(EnumType.STRING)
+    @Column(name = "penalty_type")
+    private List<QuestionPenaltyTpe> penalties = new ArrayList<>();
 
     /**
      * The default maximum number of times power-up items can be used for a single question.
@@ -176,13 +190,24 @@ public class GameSessionEntity {
 
     /**
      * Get the reward for the current question, if there is one.
-     * @return the PowerUpType or null for current question
+     * @return the PowerUpType or null
      */
     public PowerUpType getPotentialReward() {
         if (itemRewards == null || itemRewards.isEmpty() || currentQuestionIndex >= itemRewards.size()) {
             return null;
         }
         return itemRewards.get(currentQuestionIndex);
+    }
+
+    /**
+     * Get the penalties for the current question, if there is any.
+     * @return the QuestionPenaltyType or null
+     */
+    public QuestionPenaltyTpe getPotentialPenalty() {
+        if (penalties == null || penalties.isEmpty() || currentQuestionIndex >= penalties.size()) {
+            return null;
+        }
+        return penalties.get(currentQuestionIndex);
     }
 
     public void advanceSkipCount() {

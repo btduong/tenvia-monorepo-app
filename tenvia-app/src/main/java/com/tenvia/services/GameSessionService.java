@@ -1,6 +1,7 @@
 package com.tenvia.services;
 
 import com.tenvia.PowerUpType;
+import com.tenvia.common.types.QuestionPenaltyTpe;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
@@ -54,8 +55,9 @@ public class GameSessionService {
         List<Integer> goldRewards = rewardService.easyReward(questionDTOList.size());
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::getId).toList();
         List<PowerUpType> itemRewards = generateItemRewards(questionIds.size());
+        List<QuestionPenaltyTpe> penalties = generatePenalties(questionIds.size());
 
-        GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds, goldRewards, itemRewards);
+        GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds, goldRewards, itemRewards, penalties);
         gameSessionEntity.startSession(sessionConfig.getDurationInSeconds());
         gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
@@ -82,7 +84,6 @@ public class GameSessionService {
         if (isExpired(session)) {
             AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
             answerResponseDTO.setHasTimedOut(true);
-            session.advanceSkipCount();
             return answerResponseDTO;
         }
 
@@ -95,6 +96,7 @@ public class GameSessionService {
         int newBalance = session.getUser().getBalance();
         PowerUpType grantedItem = null;
         Map<PowerUpType, Integer> updateInventory = null;
+        QuestionPenaltyTpe appliedPenalty = null;
         if (isCorrect) {
             // Update Score
             session.setScore(session.getScore() + 1);
@@ -108,6 +110,15 @@ public class GameSessionService {
             }
         } else {
             session.setIncorrectAnswerCount(session.getIncorrectAnswerCount() + 1);
+            // Apply penalties if any
+            QuestionPenaltyTpe penalty = session.getPotentialPenalty();
+            if (penalty != null) {
+                appliedPenalty = penalty;
+                switch (penalty) {
+                    case LOSE_GOLD -> rewardService.grantGold(session.getUser().getId(), -5);
+
+                }
+            }
         }
 
         // Move on to the next question
@@ -119,7 +130,7 @@ public class GameSessionService {
         }
 
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount(), session.getSkipQuestionCount());
-        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex, grantedItem, updateInventory);
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex, grantedItem, updateInventory, appliedPenalty);
     }
 
     private static boolean isExpired(GameSessionEntity session) {
@@ -151,7 +162,7 @@ public class GameSessionService {
 
         session.startNewQuestion();
 
-        return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(),  session.getPotentialReward());
+        return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), session.getPotentialReward(), session.getPotentialPenalty());
     }
 
     private int handleCorrectAnswerGoldReward(GameSessionEntity session) {
@@ -163,7 +174,7 @@ public class GameSessionService {
         GameSessionEntity session = getSessionOrThrow(sessionId);
         QuestionDTO questionDTO = questionProvider.swapRandomQuestion(session.getQuestionIds());
         session.swapCurrentQuestion(questionDTO.getId());
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(),  null);
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), null, null);
 
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.SWAP_QUESTION, questionResponse);
     }
@@ -191,7 +202,7 @@ public class GameSessionService {
             incorrectOptions.get(i).setAvailable(false);
         }
 
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), null);
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), null, null);
 
         // Should probably create a new DTO AppliedEffectQuestion
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.FIFTY_FIFTY, questionResponse);
@@ -218,7 +229,7 @@ public class GameSessionService {
         // Make on option unavailable
         incorrectOptions.get(0).setAvailable(false);
 
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), null);
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), null, null);
 
         // Pick the first incorrect option
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.HAMMER, questionResponse);
@@ -254,13 +265,29 @@ public class GameSessionService {
             double v = random.nextDouble();
             if (v < .1) { // 10% to get  FIFTY_FIFTY
                 items.add(PowerUpType.FIFTY_FIFTY);
-            } else if (.1 < v  && v <= .2) {
+            } else if (.1 < v && v <= .2) {
                 items.add(PowerUpType.HAMMER);
             } else if (.2 < v && v <= .3) {
                 items.add(PowerUpType.SWAP_QUESTION);
             }
         }
         return items;
+    }
+
+    private List<QuestionPenaltyTpe> generatePenalties(int size) {
+        List<QuestionPenaltyTpe> penalties = new ArrayList<>();
+        Random random = new Random();
+
+        for (int i = 0; i < size; i++) {
+            double v = random.nextDouble();
+            if (v < 0.5) {
+                QuestionPenaltyTpe[] types = QuestionPenaltyTpe.values();
+                penalties.add(types[random.nextInt(types.length)]);
+            } else {
+                penalties.add(null);
+            }
+        }
+        return penalties;
     }
 
 }
