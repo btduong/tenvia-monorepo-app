@@ -29,6 +29,7 @@ public class QuestionMapper {
                         .map(QuestionOptionEntity::getId)
                         .findFirst()
                         .orElse(null))
+                .trait(questionEntity.getTrait())
                 .build();
     }
 

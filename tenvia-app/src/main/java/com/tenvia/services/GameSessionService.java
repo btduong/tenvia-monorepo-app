@@ -5,6 +5,7 @@ import com.tenvia.common.types.QuestionPenaltyTpe;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
+import com.tenvia.common.types.QuestionTrait;
 import com.tenvia.components.QuestionProvider;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
@@ -97,6 +98,7 @@ public class GameSessionService {
         int newBalance = session.getUser().getBalance();
         PowerUpType grantedItem = null;
         Map<PowerUpType, Integer> updateInventory = null;
+        QuestionTrait nextQuestionTrait = getNextQuestionTrait(session, questionProvider);
         QuestionPenaltyTpe appliedPenalty = null;
         if (isCorrect) {
             // Update Score
@@ -131,7 +133,14 @@ public class GameSessionService {
         }
 
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount(), session.getSkipQuestionCount());
-        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex, grantedItem, updateInventory, appliedPenalty);
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex, grantedItem, updateInventory, appliedPenalty, nextQuestionTrait);
+    }
+
+    private QuestionTrait getNextQuestionTrait(GameSessionEntity session, QuestionProvider questionProvider) {
+        Long nextQuestionId = session.getNextQuestionId();
+        QuestionDTO question = questionProvider.fetchQuestionById(nextQuestionId);
+        return question.getTrait();
+
     }
 
     private static boolean isExpired(GameSessionEntity session) {

@@ -214,4 +214,12 @@ public class GameSessionEntity {
         skipQuestionCount++;
     }
 
+    public Long getNextQuestionId() {
+        int nextQuestionIndex = currentQuestionIndex + 1;
+        if (nextQuestionIndex < questionIds.size()) {
+            return questionIds.get(nextQuestionIndex);
+        }
+        return null;
+    }
+
 }

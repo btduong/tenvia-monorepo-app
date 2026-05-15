@@ -1,6 +1,7 @@
 package com.tenvia.common.dto;
 
 
+import com.tenvia.common.types.QuestionTrait;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,4 +25,5 @@ public class QuestionDTO {
     private String explanation;
     private Integer correctOptionId;
     private Integer expiresInSeconds;
+    private QuestionTrait trait;
 }

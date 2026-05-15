@@ -3,6 +3,7 @@ package com.tenvia.services;
 import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
+import com.tenvia.common.types.QuestionTrait;
 import com.tenvia.components.QuestionProvider;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
@@ -78,7 +79,11 @@ class GameSessionServiceTest {
         QuestionOptionDTO qOption4 = new QuestionOptionDTO();
         qOption4.setId(4);
 
-        questionDTO = QuestionDTO.builder().correctOptionId(1).options(List.of(qOption1, qOption2, qOption3, qOption4)).build();
+        questionDTO = QuestionDTO.builder()
+                .correctOptionId(1)
+                .options(List.of(qOption1, qOption2, qOption3, qOption4))
+                .trait(QuestionTrait.STANDARD)
+                .build();
 
         userEntity = UserEntity.builder().id(1L).username("username").balance(10).build();
 
