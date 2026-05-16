@@ -3,6 +3,7 @@ package com.tenvia.controller;
 import com.tenvia.dto.AnswerRequestDTO;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
+import com.tenvia.dto.PeekResponseDTO;
 import com.tenvia.dto.QuestionResponse;
 import com.tenvia.services.GameSessionService;
 import org.apache.coyote.Response;
@@ -48,6 +49,12 @@ public class GameSessionController {
     public ResponseEntity<Void> abandonSession(@PathVariable UUID sessionId) {
         gameSessionService.abandonSession(sessionId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{sessionId}/peek")
+    public ResponseEntity<PeekResponseDTO> peekAtNextQuestion(@PathVariable UUID sessionId) {
+        PeekResponseDTO peekResponseDTO = gameSessionService.peek(sessionId);
+        return ResponseEntity.ok(peekResponseDTO);
     }
 
 }

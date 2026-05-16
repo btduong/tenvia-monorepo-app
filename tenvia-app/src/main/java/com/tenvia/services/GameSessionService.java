@@ -12,6 +12,7 @@ import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
+import com.tenvia.dto.PeekResponseDTO;
 import com.tenvia.dto.QuestionResponse;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
@@ -245,6 +246,28 @@ public class GameSessionService {
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.HAMMER, questionResponse);
     }
 
+    /**
+     * Show a preview of next question.
+     * @param sessionId
+     * @return
+     */
+    public PeekResponseDTO peek(UUID sessionId) {
+        GameSessionEntity session = getSessionOrThrow(sessionId);
+        String nextQuestionText = "";
+        if (session.getNextQuestionId().isPresent()) {
+            // Using currentQuestionIndex because validateAnswer already advanced the index.
+            QuestionDTO questionDTO = questionProvider.fetchQuestionById(session.getQuestionIds().get(session.getCurrentQuestionIndex()));
+            nextQuestionText = questionDTO.getQuestionText();
+        }
+
+        QuestionPenaltyTpe potentialPenalty = session.getPotentialPenalty();
+        PowerUpType potentialReward = session.getPotentialReward();
+        QuestionTrait nextQuestionTrait = getNextQuestionTrait(session, questionProvider).orElse(null);
+        int limitInSeconds = session.getQuestionTimeLimitInSeconds();
+        int currentQuestionIndex = session.getCurrentQuestionIndex();
+        return new PeekResponseDTO(nextQuestionText, potentialReward, potentialPenalty, nextQuestionTrait, limitInSeconds, currentQuestionIndex);
+    }
+
     private RewardResult finishSession(GameSessionEntity session) {
 
         int goldEarned = rewardService.calculateGold(session);
@@ -299,5 +322,6 @@ public class GameSessionService {
         }
         return penalties;
     }
+
 
 }
