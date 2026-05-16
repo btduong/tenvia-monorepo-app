@@ -161,6 +161,7 @@ public class GameSessionService {
         // if current question has expired, increase the question index to next question.
         if (isExpired(session)) {
             session.advanceQuestionIndex();
+            session.advanceSkipCount();
             // Check again in case this skipped question is the last question
             if (session.isOver()) {
                 finishSession(session);

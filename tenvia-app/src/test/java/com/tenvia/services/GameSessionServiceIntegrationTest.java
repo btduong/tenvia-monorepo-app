@@ -158,6 +158,27 @@ class GameSessionServiceIntegrationTest {
     }
 
     @Test
+    void expectSkipValidation_whenGetNextQuestion() {
+        QuestionDTO questionDTO = QuestionDTO.builder().id(1L).correctOptionId(1).build();
+        when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
+
+        QuestionResponse nextQuestion = gameSessionService.getNextQuestion(activeSessionId);
+        assertEquals(1L, nextQuestion.id());
+
+        // Let the time limit elapsed.
+        int limitInSeconds = sessionConfig.getQuestionTimeLimitInSeconds();
+        assertEquals(1, limitInSeconds);
+        await().pollDelay(limitInSeconds + 1, TimeUnit.SECONDS)
+                .atMost(3, TimeUnit.SECONDS)
+                .until(() -> true);
+
+        // Trigger the update count.
+        gameSessionService.getNextQuestion(activeSessionId);
+
+        assertEquals(1, session.getSkipQuestionCount());
+    }
+
+    @Test
     void expectAbandonSessionSuccessfully() throws Exception {
         mockMvc.perform(post("/sessions/{sessionId}/abandon", activeSessionId.toString()))
                 .andExpect(status().isOk()); // Assert HTTP 200
