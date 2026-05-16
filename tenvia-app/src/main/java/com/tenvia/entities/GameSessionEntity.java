@@ -26,6 +26,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Entity
@@ -214,12 +215,12 @@ public class GameSessionEntity {
         skipQuestionCount++;
     }
 
-    public Long getNextQuestionId() {
+    public Optional<Long> getNextQuestionId() {
         int nextQuestionIndex = currentQuestionIndex + 1;
         if (nextQuestionIndex < questionIds.size()) {
-            return questionIds.get(nextQuestionIndex);
+            return Optional.of(questionIds.get(nextQuestionIndex));
         }
-        return null;
+        return Optional.empty();
     }
 
 }

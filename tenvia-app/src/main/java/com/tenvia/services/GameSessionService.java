@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -98,8 +99,8 @@ public class GameSessionService {
         int newBalance = session.getUser().getBalance();
         PowerUpType grantedItem = null;
         Map<PowerUpType, Integer> updateInventory = null;
-        QuestionTrait nextQuestionTrait = getNextQuestionTrait(session, questionProvider);
         QuestionPenaltyTpe appliedPenalty = null;
+        QuestionTrait nextQuestionTrait = getNextQuestionTrait(session, questionProvider).orElse(null);
         if (isCorrect) {
             // Update Score
             session.setScore(session.getScore() + 1);
@@ -136,11 +137,10 @@ public class GameSessionService {
         return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex, grantedItem, updateInventory, appliedPenalty, nextQuestionTrait);
     }
 
-    private QuestionTrait getNextQuestionTrait(GameSessionEntity session, QuestionProvider questionProvider) {
-        Long nextQuestionId = session.getNextQuestionId();
-        QuestionDTO question = questionProvider.fetchQuestionById(nextQuestionId);
-        return question.getTrait();
-
+    private Optional<QuestionTrait> getNextQuestionTrait(GameSessionEntity session, QuestionProvider questionProvider) {
+        return session.getNextQuestionId()
+                .map(questionProvider::fetchQuestionById)
+                .map(QuestionDTO::getTrait);
     }
 
     private static boolean isExpired(GameSessionEntity session) {

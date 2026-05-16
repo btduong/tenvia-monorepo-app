@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -144,15 +145,15 @@ class GameSessionServiceTest {
 
     @Test
     void validateAnswer_lastQuestionCorrect_expectGameOver() {
+        questionDTO.setTrait(null);
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
-
 
         AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1);
 
         assertEquals(1, session.getCurrentQuestionIndex());
         assertTrue(result.isCorrect());
-
+        assertNull(result.getNextQuestionTrait());
     }
 
     @Test
