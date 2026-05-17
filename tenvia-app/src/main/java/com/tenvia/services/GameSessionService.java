@@ -78,8 +78,7 @@ public class GameSessionService {
             throw new GameSessionOverException(sessionId);
         }
         if (isExpired(session)) {
-            AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
-            answerResponseDTO.setHasTimedOut(true);
+            AnswerResponseDTO answerResponseDTO = AnswerResponseDTO.createAnswerTimedOutResponse();
             session.advanceSkipCount();
             return answerResponseDTO;
         }
@@ -91,8 +90,6 @@ public class GameSessionService {
         boolean isCorrect = questionDTO.getCorrectOptionId().equals(selectedOptionId);
         // Handle correct case
         int newBalance = session.getUser().getBalance();
-        PowerUpType grantedItem = null;
-        Map<PowerUpType, Integer> updateInventory = null;
         if (isCorrect) {
             // Update Score
             session.setScore(session.getScore() + 1);
@@ -110,7 +107,7 @@ public class GameSessionService {
         }
 
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount(), session.getSkipQuestionCount());
-        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex, grantedItem, updateInventory);
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex);
     }
 
     private static boolean isExpired(GameSessionEntity session) {

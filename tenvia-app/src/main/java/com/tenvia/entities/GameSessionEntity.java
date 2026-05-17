@@ -44,6 +44,9 @@ public class GameSessionEntity {
                 .build();
     }
 
+    /**
+     * Used by Spring Data for optimistic locking.
+     */
     @Version
     private Long version;
 
