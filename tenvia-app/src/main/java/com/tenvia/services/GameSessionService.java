@@ -11,6 +11,7 @@ import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
 import com.tenvia.dto.QuestionResponse;
+import com.tenvia.dto.RewardResult;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.GameSessionOverException;
@@ -18,17 +19,13 @@ import com.tenvia.exception.SessionNotFoundException;
 import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 

@@ -1,4 +1,4 @@
-package com.tenvia.services;
+package com.tenvia.dto;
 
 public record RewardResult(
         int finalScore,
