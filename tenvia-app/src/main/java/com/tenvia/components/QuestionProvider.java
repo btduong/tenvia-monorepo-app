@@ -12,7 +12,6 @@ public class QuestionProvider {
 
     private final WebClient webClient;
 
-    // Need to pass config through constructor and not inject it in with @Value because QuestionProvider may not or still is being built.
     public QuestionProvider(WebClient.Builder webClientBuilder, QuestionServiceConfig config) {
         this.webClient = webClientBuilder
                 .baseUrl(config.getUrl())
