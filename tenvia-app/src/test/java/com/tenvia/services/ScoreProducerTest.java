@@ -1,6 +1,7 @@
 package com.tenvia.services;
 
 import com.tenvia.common.event.ScoreSubmittedEvent;
+import com.tenvia.components.ScoreProducer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

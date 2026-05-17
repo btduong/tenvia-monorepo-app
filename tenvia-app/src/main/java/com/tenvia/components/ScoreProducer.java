@@ -1,4 +1,4 @@
-package com.tenvia.services;
+package com.tenvia.components;
 
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import lombok.extern.slf4j.Slf4j;
