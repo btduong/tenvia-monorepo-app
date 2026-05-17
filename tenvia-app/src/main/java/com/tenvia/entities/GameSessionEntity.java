@@ -36,16 +36,17 @@ import java.util.UUID;
 @Setter
 public class GameSessionEntity {
 
-    public static GameSessionEntity createInitial(UserEntity user, List<Long> questionIds, List<Integer> goldRewards, List<PowerUpType> itemRewards) {
+    public static GameSessionEntity createInitial(UserEntity user, List<Long> questionIds) {
         return GameSessionEntity.builder()
                 .user(user)
                 .questionIds(questionIds)
-                .goldRewards(goldRewards)
                 .currentQuestionIndex(0)
-                .itemRewards(itemRewards)
                 .build();
     }
 
+    /**
+     * Used by Spring Data for optimistic locking.
+     */
     @Version
     private Long version;
 
@@ -83,27 +84,6 @@ public class GameSessionEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
-
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "session_rewards",
-            joinColumns = @JoinColumn(name = "session_id") // Links to GameSession ID
-    )
-    @Column(name = "reward_amount") // The name of the value column
-    private List<Integer> goldRewards = new ArrayList<>();
-
-    /**
-     * Store a list of power up items as a string ie HAMMER, FIFTY_FIFTY, null.
-     */
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "session_item_rewards",
-            joinColumns = @JoinColumn(name = "session_id")
-    )
-    @Enumerated(EnumType.STRING)
-    @Column(name = "reward_item")
-    private List<PowerUpType> itemRewards = new ArrayList<>();
 
     /**
      * The default maximum number of times power-up items can be used for a single question.
@@ -172,17 +152,6 @@ public class GameSessionEntity {
 
         questionIds.set(currentQuestionIndex, newQuestionId);
         startNewQuestion();
-    }
-
-    /**
-     * Get the reward for the current question, if there is one.
-     * @return the PowerUpType or null for current question
-     */
-    public PowerUpType getPotentialReward() {
-        if (itemRewards == null || itemRewards.isEmpty() || currentQuestionIndex >= itemRewards.size()) {
-            return null;
-        }
-        return itemRewards.get(currentQuestionIndex);
     }
 
     public void advanceSkipCount() {

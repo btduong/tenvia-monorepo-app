@@ -12,18 +12,16 @@ public record QuestionResponse(
         List<QuestionOptionDTO> options,
         boolean powerUpDisabled,
         Integer expiresInSecond,
-        Integer index,
-        PowerUpType potentialReward) {
+        Integer index) {
 
-    public static QuestionResponse from(QuestionDTO dto, int index, int expiresIn, PowerUpType potentialReward) {
+    public static QuestionResponse from(QuestionDTO dto, int index, int expiresIn) {
         return new QuestionResponse(
                 dto.getId(),
                 dto.getQuestionText(),
                 dto.getOptions(),
                 dto.isPowerUpDisabled(),
                 expiresIn,
-                index,
-                potentialReward
+                index
         );
     }
 }

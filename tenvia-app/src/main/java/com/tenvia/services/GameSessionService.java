@@ -5,62 +5,60 @@ import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.components.QuestionProvider;
+import com.tenvia.components.ScoreProducer;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
 import com.tenvia.dto.QuestionResponse;
+import com.tenvia.dto.RewardResult;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.GameSessionOverException;
 import com.tenvia.exception.SessionNotFoundException;
-import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class GameSessionService {
 
     private final GameSessionRepository gameSessionRepository;
     private final UserService userService;
     private final RewardService rewardService;
     private final QuestionProvider questionProvider;
-    private final GameSessionMapper gameSessionMapper;
     private final ScoreProducer scoreProducer;
     private final SessionConfig sessionConfig;
-    private final InventoryService inventoryService;
 
 
     public GameSessionDTO createNewSession(Long userId, int limit) {
         List<QuestionDTO> questionDTOList = questionProvider.fetchRandomQuestions(limit);
 
         UserEntity user = userService.findUserById(userId);
-        List<Integer> goldRewards = rewardService.easyReward(questionDTOList.size());
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::getId).toList();
-        List<PowerUpType> itemRewards = generateItemRewards(questionIds.size());
 
-        GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds, goldRewards, itemRewards);
+        GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds);
         gameSessionEntity.startSession(sessionConfig.getDurationInSeconds());
         gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
-        return gameSessionMapper.toDTO(savedSession, questionDTOList);
+        long remainingDuration = Duration.between(LocalDateTime.now(), savedSession.getEndTime()).getSeconds();
+        // Clamp the value in case 'now' > endTime -> negative value.
+        remainingDuration = Math.max(remainingDuration, 0);
+        return GameSessionDTO.from(savedSession, questionDTOList, remainingDuration);
     }
 
     public void abandonSession(UUID sessionId) {
@@ -80,8 +78,7 @@ public class GameSessionService {
             throw new GameSessionOverException(sessionId);
         }
         if (isExpired(session)) {
-            AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
-            answerResponseDTO.setHasTimedOut(true);
+            AnswerResponseDTO answerResponseDTO = AnswerResponseDTO.createAnswerTimedOutResponse();
             session.advanceSkipCount();
             return answerResponseDTO;
         }
@@ -93,19 +90,10 @@ public class GameSessionService {
         boolean isCorrect = questionDTO.getCorrectOptionId().equals(selectedOptionId);
         // Handle correct case
         int newBalance = session.getUser().getBalance();
-        PowerUpType grantedItem = null;
-        Map<PowerUpType, Integer> updateInventory = null;
         if (isCorrect) {
             // Update Score
             session.setScore(session.getScore() + 1);
             session.setCorrectAnswerCount(session.getCorrectAnswerCount() + 1);
-            newBalance = handleCorrectAnswerGoldReward(session);
-
-            // Grant items reward if any
-            grantedItem = session.getPotentialReward();
-            if (grantedItem != null) {
-                updateInventory = inventoryService.addItem(session.getUser().getId(), grantedItem, 1);
-            }
         } else {
             session.setIncorrectAnswerCount(session.getIncorrectAnswerCount() + 1);
         }
@@ -119,7 +107,7 @@ public class GameSessionService {
         }
 
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount(), session.getSkipQuestionCount());
-        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex, grantedItem, updateInventory);
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex);
     }
 
     private static boolean isExpired(GameSessionEntity session) {
@@ -151,19 +139,14 @@ public class GameSessionService {
 
         session.startNewQuestion();
 
-        return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(),  session.getPotentialReward());
-    }
-
-    private int handleCorrectAnswerGoldReward(GameSessionEntity session) {
-        int amount = session.getGoldRewards().get(session.getCurrentQuestionIndex());
-        return rewardService.grantGold(session.getUser().getId(), amount);
+        return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
     }
 
     public AppliedEffectResult applySwapQuestionOption(UUID sessionId) {
         GameSessionEntity session = getSessionOrThrow(sessionId);
         QuestionDTO questionDTO = questionProvider.swapRandomQuestion(session.getQuestionIds());
         session.swapCurrentQuestion(questionDTO.getId());
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(),  null);
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.SWAP_QUESTION, questionResponse);
     }
@@ -191,7 +174,7 @@ public class GameSessionService {
             incorrectOptions.get(i).setAvailable(false);
         }
 
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), null);
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         // Should probably create a new DTO AppliedEffectQuestion
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.FIFTY_FIFTY, questionResponse);
@@ -218,7 +201,7 @@ public class GameSessionService {
         // Make on option unavailable
         incorrectOptions.get(0).setAvailable(false);
 
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds(), null);
+        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         // Pick the first incorrect option
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.HAMMER, questionResponse);
@@ -245,22 +228,6 @@ public class GameSessionService {
 
     private GameSessionEntity getSessionOrThrow(UUID sessionId) {
         return gameSessionRepository.findById(sessionId).orElseThrow(() -> new SessionNotFoundException("Session not found"));
-    }
-
-    private List<PowerUpType> generateItemRewards(int size) {
-        List<PowerUpType> items = new ArrayList<>();
-        Random random = new Random();
-        for (int i = 0; i < size; i++) {
-            double v = random.nextDouble();
-            if (v < .1) { // 10% to get  FIFTY_FIFTY
-                items.add(PowerUpType.FIFTY_FIFTY);
-            } else if (.1 < v  && v <= .2) {
-                items.add(PowerUpType.HAMMER);
-            } else if (.2 < v && v <= .3) {
-                items.add(PowerUpType.SWAP_QUESTION);
-            }
-        }
-        return items;
     }
 
 }

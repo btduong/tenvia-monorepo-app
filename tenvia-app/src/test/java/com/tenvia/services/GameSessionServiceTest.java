@@ -4,13 +4,13 @@ import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.components.QuestionProvider;
+import com.tenvia.components.ScoreProducer;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
-import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,8 +48,6 @@ class GameSessionServiceTest {
     private RewardService rewardService;
     @Mock
     private QuestionProvider questionProvider;
-    @Mock
-    private GameSessionMapper gameSessionMapper;
     @Mock
     private ScoreProducer scoreProducer;
     @Mock
@@ -88,9 +87,9 @@ class GameSessionServiceTest {
                 .currentQuestionIndex(0)
                 .isOver(false)
                 .user(userEntity)
-                .goldRewards(List.of(1, 2, 3))
                 .activePowerUps(new ArrayList<>())
-                .itemRewards(new ArrayList<>())
+                .startTime(LocalDateTime.now())
+                .endTime(LocalDateTime.now().plusMinutes(1))
                 .build();
 
     }
@@ -98,17 +97,16 @@ class GameSessionServiceTest {
     @Test
     void createNewSession() {
         List<QuestionDTO> randomQuestions = List.of(questionDTO);
-        GameSessionDTO gameSession = GameSessionDTO.builder().score(0).currentQuestionIndex(0).questions(randomQuestions).build();
 
         when(userService.findUserById(1L)).thenReturn(userEntity);
         when(questionProvider.fetchRandomQuestions(anyInt())).thenReturn(randomQuestions);
-        when(gameSessionMapper.toDTO(any(), anyList())).thenReturn(gameSession);
+        when(gameSessionRepository.save(any())).thenReturn(session);
 
         GameSessionDTO newSession = gameSessionService.createNewSession(1L, 1);
 
-        assertEquals(0, newSession.getScore());
-        assertEquals(0, newSession.getCurrentQuestionIndex());
-        assertEquals(1, newSession.getQuestions().size());
+        assertEquals(0, newSession.score());
+        assertEquals(0, newSession.currentQuestionIndex());
+        assertEquals(1, newSession.questions().size());
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,39 +12,31 @@ import lombok.Setter;
 
 import java.util.Map;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class AnswerResponseDTO {
+@Builder
+public record AnswerResponseDTO(boolean isCorrect,
+                                String correctLetter,
+                                String explanation,
+                                int newBalance,
+                                @JsonProperty("isGameOver") boolean isGameOver,
+                                GameSessionSummary summary,
+                                boolean hasTimedOut,
+                                int currentQuestionIndex) {
 
-    public static AnswerResponseDTO from(boolean isCorrect, QuestionDTO questionDTO, GameSessionSummary gameSessionSummary, int newBalance, boolean sessionIsOver, int currentQuestionIndex, PowerUpType grantedItem, Map<PowerUpType, Integer> updatedInventory) {
-        AnswerResponseDTO answerResponseDTO = new AnswerResponseDTO();
-        answerResponseDTO.setCorrect(isCorrect);
-        answerResponseDTO.setCorrectLetter(questionDTO.getCorrectLetter());
-        answerResponseDTO.setExplanation(questionDTO.getExplanation());
-        answerResponseDTO.setNewBalance(newBalance);
-        answerResponseDTO.setGameOver(sessionIsOver);
-        answerResponseDTO.setSummary(gameSessionSummary);
-        answerResponseDTO.setCurrentQuestionIndex(currentQuestionIndex);
-        answerResponseDTO.setGrantedItem(grantedItem);
-        answerResponseDTO.setUpdatedInventory(updatedInventory);
-        return answerResponseDTO;
+
+    public static AnswerResponseDTO createAnswerTimedOutResponse() {
+        return AnswerResponseDTO.builder().hasTimedOut(true).build();
     }
 
-    private boolean isCorrect;
-    private String correctLetter;
-    private String explanation;
-    private int newBalance;
-    private boolean isGameOver;
-    private GameSessionSummary summary;
-    private boolean hasTimedOut;
-    private int currentQuestionIndex;
-    private PowerUpType grantedItem;
-    private Map<PowerUpType, Integer> updatedInventory;
-
-    @JsonProperty("isGameOver")
-    public boolean isGameOver() {
-        return isGameOver;
+    public static AnswerResponseDTO from(boolean isCorrect, QuestionDTO questionDTO, GameSessionSummary gameSessionSummary, int newBalance, boolean sessionIsOver, int currentQuestionIndex) {
+        return AnswerResponseDTO.builder()
+                .isCorrect(isCorrect)
+                .correctLetter(questionDTO.getCorrectLetter())
+                .explanation(questionDTO.getExplanation())
+                .newBalance(newBalance)
+                .isGameOver(sessionIsOver)
+                .summary(gameSessionSummary)
+                .currentQuestionIndex(currentQuestionIndex)
+                .build();
     }
+
 }
