@@ -17,7 +17,6 @@ import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.GameSessionOverException;
 import com.tenvia.exception.SessionNotFoundException;
-import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +39,6 @@ public class GameSessionService {
     private final UserService userService;
     private final RewardService rewardService;
     private final QuestionProvider questionProvider;
-    private final GameSessionMapper gameSessionMapper;
     private final ScoreProducer scoreProducer;
     private final SessionConfig sessionConfig;
 
@@ -56,7 +54,7 @@ public class GameSessionService {
         gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
-        return gameSessionMapper.toDTO(savedSession, questionDTOList);
+        return GameSessionDTO.from(savedSession, questionDTOList);
     }
 
     public void abandonSession(UUID sessionId) {

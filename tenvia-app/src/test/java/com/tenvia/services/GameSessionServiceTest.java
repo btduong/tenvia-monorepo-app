@@ -11,7 +11,6 @@ import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
-import com.tenvia.mappers.GameSessionMapper;
 import com.tenvia.repositories.GameSessionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -48,8 +48,6 @@ class GameSessionServiceTest {
     private RewardService rewardService;
     @Mock
     private QuestionProvider questionProvider;
-    @Mock
-    private GameSessionMapper gameSessionMapper;
     @Mock
     private ScoreProducer scoreProducer;
     @Mock
@@ -90,6 +88,8 @@ class GameSessionServiceTest {
                 .isOver(false)
                 .user(userEntity)
                 .activePowerUps(new ArrayList<>())
+                .startTime(LocalDateTime.now())
+                .endTime(LocalDateTime.now().plusMinutes(1))
                 .build();
 
     }
@@ -101,7 +101,7 @@ class GameSessionServiceTest {
 
         when(userService.findUserById(1L)).thenReturn(userEntity);
         when(questionProvider.fetchRandomQuestions(anyInt())).thenReturn(randomQuestions);
-        when(gameSessionMapper.toDTO(any(), anyList())).thenReturn(gameSession);
+        when(gameSessionRepository.save(any())).thenReturn(session);
 
         GameSessionDTO newSession = gameSessionService.createNewSession(1L, 1);
 
