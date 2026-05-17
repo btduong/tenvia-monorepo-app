@@ -50,9 +50,8 @@ public class GameSessionService {
         UserEntity user = userService.findUserById(userId);
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::getId).toList();
 
-        GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds);
+        GameSessionEntity gameSessionEntity = new GameSessionEntity(user, questionIds, sessionConfig.getQuestionTimeLimitInSeconds());
         gameSessionEntity.startSession(sessionConfig.getDurationInSeconds());
-        gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
         long remainingDuration = Duration.between(LocalDateTime.now(), savedSession.getEndTime()).getSeconds();
@@ -68,7 +67,7 @@ public class GameSessionService {
             return;
         }
 
-        session.setOver(true);
+        session.endSession();
         log.info("Session: {} has successfully abadoned", sessionId);
     }
 
@@ -91,11 +90,9 @@ public class GameSessionService {
         // Handle correct case
         int newBalance = session.getUser().getBalance();
         if (isCorrect) {
-            // Update Score
-            session.setScore(session.getScore() + 1);
-            session.setCorrectAnswerCount(session.getCorrectAnswerCount() + 1);
+            session.updateCorrectAnswer();
         } else {
-            session.setIncorrectAnswerCount(session.getIncorrectAnswerCount() + 1);
+            session.updateIncorrectAnswer();
         }
 
         // Move on to the next question

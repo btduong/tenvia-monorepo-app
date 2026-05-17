@@ -16,11 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,20 +25,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "game_session")
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Getter
-@Setter
 public class GameSessionEntity {
-
-    public static GameSessionEntity createInitial(UserEntity user, List<Long> questionIds) {
-        return GameSessionEntity.builder()
-                .user(user)
-                .questionIds(questionIds)
-                .currentQuestionIndex(0)
-                .build();
-    }
 
     /**
      * Used by Spring Data for optimistic locking.
@@ -72,7 +56,6 @@ public class GameSessionEntity {
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private boolean isCompleted;
     private int correctAnswerCount = 0;
     private int incorrectAnswerCount = 0;
     private LocalDateTime questionStartTime;
@@ -89,7 +72,6 @@ public class GameSessionEntity {
      * The default maximum number of times power-up items can be used for a single question.
      * Some gameplay mechanics may allow this value to be increased or decreased.
      */
-    @Builder.Default
     @Column(name = "current_question_powerup_limit")
     private int powerUpLimit = 1;
 
@@ -103,10 +85,25 @@ public class GameSessionEntity {
     @Column(name = "powerup_type")
     private List<PowerUpType> activePowerUps = new ArrayList<>();
 
+    protected GameSessionEntity() {
+    } // JPA compliant
+
+    public GameSessionEntity(UserEntity user, List<Long> questionIds, int questionTimeLimitInSeconds) {
+        if (user == null || questionIds == null || questionIds.isEmpty()) {
+            throw new IllegalArgumentException("User and QuestionIds must be valid");
+        }
+        if (questionTimeLimitInSeconds <= 0) {
+            throw new IllegalArgumentException("Time limit must be none zero");
+        }
+
+        this.user = user;
+        this.questionIds = questionIds;
+        this.questionTimeLimitInSeconds = questionTimeLimitInSeconds;
+    }
+
     public void startSession(int sessionDurationInSecond) {
         startTime = LocalDateTime.now();
         endTime = startTime.plusSeconds(sessionDurationInSecond);
-        isCompleted = false;
     }
 
     /***
@@ -143,6 +140,7 @@ public class GameSessionEntity {
 
     /**
      * Swap current question for a random question in the database that is not already in the list of existing ids.
+     *
      * @param newQuestionId the id of the new question
      */
     public void swapCurrentQuestion(Long newQuestionId) {
@@ -156,6 +154,19 @@ public class GameSessionEntity {
 
     public void advanceSkipCount() {
         skipQuestionCount++;
+    }
+
+    public void updateCorrectAnswer() {
+        score++;
+        correctAnswerCount++;
+    }
+
+    public void updateIncorrectAnswer() {
+        incorrectAnswerCount++;
+    }
+
+    public void endSession() {
+        isOver = true;
     }
 
 }

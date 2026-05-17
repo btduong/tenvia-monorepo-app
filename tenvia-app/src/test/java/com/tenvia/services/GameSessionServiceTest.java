@@ -7,8 +7,8 @@ import com.tenvia.components.QuestionProvider;
 import com.tenvia.components.ScoreProducer;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
-import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.AppliedEffectResult;
+import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.repositories.GameSessionRepository;
@@ -19,8 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,10 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -64,6 +60,7 @@ class GameSessionServiceTest {
     @BeforeEach
     public void setUp() {
         sessionId = UUID.randomUUID();
+        when(sessionConfig.getQuestionTimeLimitInSeconds()).thenReturn(5);
 
         QuestionOptionDTO qOption1 = new QuestionOptionDTO();
         qOption1.setId(1);
@@ -79,20 +76,10 @@ class GameSessionServiceTest {
 
         questionDTO = QuestionDTO.builder().correctOptionId(1).options(List.of(qOption1, qOption2, qOption3, qOption4)).build();
 
-//        userEntity = UserEntity.builder().id(1L).username("username").balance(10).build();
         userEntity = new UserEntity("username");
 
-        session = GameSessionEntity.builder()
-                .id(sessionId)
-                .questionIds(List.of(1L, 2L))
-                .currentQuestionIndex(0)
-                .isOver(false)
-                .user(userEntity)
-                .activePowerUps(new ArrayList<>())
-                .startTime(LocalDateTime.now())
-                .endTime(LocalDateTime.now().plusMinutes(1))
-                .build();
-
+        session = new GameSessionEntity(userEntity, List.of(1L), sessionConfig.getQuestionTimeLimitInSeconds());
+        session.startSession(5);
     }
 
     @Test
@@ -129,7 +116,7 @@ class GameSessionServiceTest {
 
     @Test
     void validateAnswer_gameOver_expectException() {
-        session.setOver(true);
+        session.endSession();
 
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
 
@@ -140,7 +127,6 @@ class GameSessionServiceTest {
     void validateAnswer_lastQuestionCorrect_expectGameOver() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
-
 
         AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1);
 
@@ -189,7 +175,6 @@ class GameSessionServiceTest {
 
     @Test
     void finishSession_getBaseResult_noCorrectQuestion() {
-        session.setCurrentQuestionIndex(1);
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(rewardService.calculateGold(session)).thenReturn(5);
         when(userService.updateBalance(any(), isA(Integer.class))).thenReturn(5);
