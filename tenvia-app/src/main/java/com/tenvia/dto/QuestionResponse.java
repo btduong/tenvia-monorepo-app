@@ -16,10 +16,10 @@ public record QuestionResponse(
 
     public static QuestionResponse from(QuestionDTO dto, int index, int expiresIn) {
         return new QuestionResponse(
-                dto.getId(),
-                dto.getQuestionText(),
-                dto.getOptions(),
-                dto.isPowerUpDisabled(),
+                dto.id(),
+                dto.questionText(),
+                dto.options(),
+                dto.powerUpDisabled(),
                 expiresIn,
                 index
         );

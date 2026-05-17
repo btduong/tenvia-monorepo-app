@@ -30,8 +30,8 @@ public record AnswerResponseDTO(boolean isCorrect,
     public static AnswerResponseDTO from(boolean isCorrect, QuestionDTO questionDTO, GameSessionSummary gameSessionSummary, int newBalance, boolean sessionIsOver, int currentQuestionIndex) {
         return AnswerResponseDTO.builder()
                 .isCorrect(isCorrect)
-                .correctLetter(questionDTO.getCorrectLetter())
-                .explanation(questionDTO.getExplanation())
+                .correctLetter(questionDTO.correctLetter())
+                .explanation(questionDTO.explanation())
                 .newBalance(newBalance)
                 .isGameOver(sessionIsOver)
                 .summary(gameSessionSummary)
