@@ -14,13 +14,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-@AllArgsConstructor
-@Getter
-@Setter
 @Builder
-public class GameSessionDTO {
+public record GameSessionDTO(List<QuestionDTO> questions,
+                             int currentQuestionIndex,
+                             int score,
+                             UUID id,
+                             UserDTO user,
+                             long duration,
+                             String endTime) {
 
-    public static GameSessionDTO from(GameSessionEntity entity, List<QuestionDTO> questions) {
+    public static GameSessionDTO from(GameSessionEntity entity, List<QuestionDTO> questions, long remainingDurationInSeconds) {
         UserEntity user = entity.getUser();
         return GameSessionDTO.builder()
                 .id(entity.getId())
@@ -28,16 +31,9 @@ public class GameSessionDTO {
                 .questions(questions)
                 .currentQuestionIndex(entity.getCurrentQuestionIndex())
                 .user(new UserDTO(user.getId(), user.getUsername(), user.getCreatedAt(), user.getBalance(), new HashMap<>()))
-                .duration(Duration.between(LocalDateTime.now(), entity.getEndTime()).getSeconds())
+                .duration(remainingDurationInSeconds)
                 .endTime(entity.getEndTime().toString())
                 .build();
     }
 
-    private List<QuestionDTO> questions;
-    private int currentQuestionIndex = 0;
-    private int score = 0;
-    private UUID id;
-    private UserDTO user;
-    private long duration;
-    private String endTime;
 }

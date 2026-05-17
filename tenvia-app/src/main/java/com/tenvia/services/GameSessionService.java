@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +55,10 @@ public class GameSessionService {
         gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
-        return GameSessionDTO.from(savedSession, questionDTOList);
+        long remainingDuration = Duration.between(LocalDateTime.now(), savedSession.getEndTime()).getSeconds();
+        // Clamp the value in case 'now' > endTime -> negative value.
+        remainingDuration = Math.max(remainingDuration, 0);
+        return GameSessionDTO.from(savedSession, questionDTOList, remainingDuration);
     }
 
     public void abandonSession(UUID sessionId) {

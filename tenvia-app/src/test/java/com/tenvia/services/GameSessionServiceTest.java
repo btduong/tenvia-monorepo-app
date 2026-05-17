@@ -97,7 +97,6 @@ class GameSessionServiceTest {
     @Test
     void createNewSession() {
         List<QuestionDTO> randomQuestions = List.of(questionDTO);
-        GameSessionDTO gameSession = GameSessionDTO.builder().score(0).currentQuestionIndex(0).questions(randomQuestions).build();
 
         when(userService.findUserById(1L)).thenReturn(userEntity);
         when(questionProvider.fetchRandomQuestions(anyInt())).thenReturn(randomQuestions);
@@ -105,9 +104,9 @@ class GameSessionServiceTest {
 
         GameSessionDTO newSession = gameSessionService.createNewSession(1L, 1);
 
-        assertEquals(0, newSession.getScore());
-        assertEquals(0, newSession.getCurrentQuestionIndex());
-        assertEquals(1, newSession.getQuestions().size());
+        assertEquals(0, newSession.score());
+        assertEquals(0, newSession.currentQuestionIndex());
+        assertEquals(1, newSession.questions().size());
     }
 
     @Test
