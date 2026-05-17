@@ -49,6 +49,8 @@ public class UserEntity {
         this.username = username;
     }
 
+    protected UserEntity() {}
+
     public void setBalance(int balance) {
         this.balance = balance;
     }
