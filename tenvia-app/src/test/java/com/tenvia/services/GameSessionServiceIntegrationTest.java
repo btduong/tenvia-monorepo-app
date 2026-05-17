@@ -95,7 +95,6 @@ class GameSessionServiceIntegrationTest {
         session.setCurrentQuestionIndex(0);
         session.setOver(false);
         session.setUser(userEntity);
-        session.setGoldRewards(List.of(1, 2, 3, 4, 5, 6));
         session.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity saved = gameSessionRepository.save(session);
