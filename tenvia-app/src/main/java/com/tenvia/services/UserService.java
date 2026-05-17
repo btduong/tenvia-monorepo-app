@@ -7,6 +7,7 @@ import com.tenvia.exception.UserIdNotFoundException;
 import com.tenvia.repositories.InventoryRepository;
 import com.tenvia.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,12 +26,7 @@ public class UserService {
     public UserEntity login(String username) {
         return userRepository.findByUsername(username)
                 .orElseGet(() -> {
-                    UserEntity user = UserEntity.builder()
-                            .username(username)
-                            .createdAt(LocalDateTime.now())
-                            .balance(0)
-                            .inventory(new HashMap<>())
-                            .build();
+                    UserEntity user = new UserEntity(username);
                     return userRepository.save(user);
                 });
     }

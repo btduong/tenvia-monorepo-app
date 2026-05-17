@@ -88,7 +88,7 @@ class GameSessionServiceIntegrationTest {
     @BeforeEach
     void setUp() {
 
-        userEntity = UserEntity.builder().username("username").id(1L).balance(0).build();
+        userEntity = new UserEntity("username");
 
         session = new GameSessionEntity();
         session.setQuestionIds(List.of(1L, 2L));

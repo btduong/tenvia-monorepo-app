@@ -79,7 +79,8 @@ class GameSessionServiceTest {
 
         questionDTO = QuestionDTO.builder().correctOptionId(1).options(List.of(qOption1, qOption2, qOption3, qOption4)).build();
 
-        userEntity = UserEntity.builder().id(1L).username("username").balance(10).build();
+//        userEntity = UserEntity.builder().id(1L).username("username").balance(10).build();
+        userEntity = new UserEntity("username");
 
         session = GameSessionEntity.builder()
                 .id(sessionId)

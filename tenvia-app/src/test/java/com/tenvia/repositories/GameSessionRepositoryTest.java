@@ -3,6 +3,7 @@ package com.tenvia.repositories;
 import com.tenvia.TenviaApplication;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
+import org.h2.engine.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -27,7 +28,7 @@ class GameSessionRepositoryTest {
     @Test
     void findTop10ByIsOverTrueOrderByScoreDesc() {
         for (int i = 0; i < 10; i++) {
-            UserEntity user = UserEntity.builder().username("Player " + i).build();
+            UserEntity user = new UserEntity("Player " + i);
             testEntityManager.persist(user);
             GameSessionEntity session = new GameSessionEntity();
             session.setUser(user);
@@ -39,7 +40,7 @@ class GameSessionRepositoryTest {
 
         // A session not over yet
         GameSessionEntity sessionInPlay = new GameSessionEntity();
-        UserEntity user = UserEntity.builder().username("Player.x").build();
+        UserEntity user = new UserEntity("Player.x");
         testEntityManager.persist(user);
         sessionInPlay.setUser(user);
         sessionInPlay.setScore(999);
@@ -54,7 +55,7 @@ class GameSessionRepositoryTest {
 
     @Test
     void oneUserCanHaveMultipleSessions() {
-        UserEntity user = testEntityManager.persist(UserEntity.builder().username("Alice").build());
+        UserEntity user = testEntityManager.persist(new UserEntity("Alice"));
 
         gameSessionRepository.save(GameSessionEntity.builder().user(user).isOver(true).score(50).build());
         gameSessionRepository.save(GameSessionEntity.builder().user(user).isOver(true).score(150).build());
