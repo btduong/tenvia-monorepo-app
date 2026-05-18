@@ -1,4 +1,4 @@
-package com.tenvia.question;
+package com.tenvia.question.service;
 
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;

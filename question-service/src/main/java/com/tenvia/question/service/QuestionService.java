@@ -1,7 +1,6 @@
 package com.tenvia.question.service;
 
 import com.tenvia.common.dto.QuestionDTO;
-import com.tenvia.question.QuestionMapper;
 import com.tenvia.question.entities.QuestionEntity;
 import com.tenvia.question.repositories.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
