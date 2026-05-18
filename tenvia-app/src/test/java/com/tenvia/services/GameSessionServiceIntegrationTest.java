@@ -102,18 +102,18 @@ class GameSessionServiceIntegrationTest {
         when(userService.updateBalance(anyLong(), anyInt())).thenReturn(1);
 
         // question 1 - incorrect
-        QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1).build();
+        QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();
         when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
-        gameSessionService.validateAnswer(activeSessionId, 100);
+        gameSessionService.validateAnswer(activeSessionId, 100L);
         GameSessionEntity updatedSession = gameSessionRepository.findById(activeSessionId).get();
         assertEquals(1, updatedSession.getCurrentQuestionIndex());
         assertEquals(0, updatedSession.getScore());
 
         // question 2 - correct
         when(rewardService.grantGold(session.getUser().getId(), 1)).thenReturn(1);
-        QuestionDTO questionDTO2 = QuestionDTO.builder().correctOptionId(400).build();
+        QuestionDTO questionDTO2 = QuestionDTO.builder().correctOptionId(400L).build();
         when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO2);
-        gameSessionService.validateAnswer(activeSessionId, 400);
+        gameSessionService.validateAnswer(activeSessionId, 400L);
         updatedSession = gameSessionRepository.findById(activeSessionId).get();
         assertEquals(2, updatedSession.getCurrentQuestionIndex());
         assertEquals(1, updatedSession.getScore());
@@ -127,7 +127,7 @@ class GameSessionServiceIntegrationTest {
 
     @Test
     void expectSkipValidation_whenQuestionTimedOut() {
-        QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1).build();
+        QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();
         when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
         QuestionResponse nextQuestion = gameSessionService.getNextQuestion(activeSessionId);
         assertEquals(0, nextQuestion.index());
@@ -146,7 +146,7 @@ class GameSessionServiceIntegrationTest {
                 .until(() -> true);
 
         // Validate
-        AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(activeSessionId, 100);
+        AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(activeSessionId, 100L);
         assertTrue(answerResponseDTO.hasTimedOut());
         assertEquals(1, session.getSkipQuestionCount());
     }

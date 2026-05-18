@@ -169,4 +169,8 @@ public class GameSessionEntity {
         isOver = true;
     }
 
+    public Long getCurrentQuestionId() {
+        return questionIds.get(currentQuestionIndex);
+    }
+
 }

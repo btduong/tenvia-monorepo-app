@@ -21,6 +21,7 @@ import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -71,7 +72,7 @@ public class GameSessionService {
         log.info("Session: {} has successfully abadoned", sessionId);
     }
 
-    public AnswerResponseDTO validateAnswer(UUID sessionId, Integer selectedOptionId) {
+    public AnswerResponseDTO validateAnswer(UUID sessionId, Long selectedOptionId) {
         GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
@@ -156,22 +157,23 @@ public class GameSessionService {
 
         session.addActivatedPowerUp(PowerUpType.FIFTY_FIFTY);
 
-        Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
+        Long currentQuestionId = session.getCurrentQuestionId();
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
-        Integer correctOptionId = questionDTO.correctOptionId();
+        Long correctOptionId = questionDTO.correctOptionId();
 
-        List<QuestionOptionDTO> incorrectOptions = questionDTO.options().stream()
-                .filter(opt -> !opt.getId().equals(correctOptionId))
+        List<Long> incorrectOptionIds = questionDTO.options().stream()
+                .map(QuestionOptionDTO::id)
+                .filter(id -> !id.equals(correctOptionId))
                 .collect(Collectors.toList());
-        Collections.shuffle(incorrectOptions);
+        Collections.shuffle(incorrectOptionIds);
 
-        // Randomly pick 2 options to make them unavailable for selecting
-        for (int i = 1; i < incorrectOptions.size(); i++) {
-            incorrectOptions.get(i).setAvailable(false);
-        }
+        // Randomly pick half of the options to make them unavailable for selecting
+        List<Long> IdsToDisable = incorrectOptionIds.subList(0, incorrectOptionIds.size() / 2 + 1);
 
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        QuestionDTO modifiedQuestion = getModifiedQuestion(questionDTO, IdsToDisable);
+
+        QuestionResponse questionResponse = QuestionResponse.from(modifiedQuestion, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         // Should probably create a new DTO AppliedEffectQuestion
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.FIFTY_FIFTY, questionResponse);
@@ -185,23 +187,46 @@ public class GameSessionService {
 
         session.addActivatedPowerUp(PowerUpType.HAMMER);
 
-        Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
-
+        Long currentQuestionId = session.getCurrentQuestionId();
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
 
-        Integer correctOptionId = questionDTO.correctOptionId();
-        List<QuestionOptionDTO> incorrectOptions = questionDTO.options().stream()
-                .filter(opt -> !opt.getId().equals(correctOptionId))
+        Long correctOptionId = questionDTO.correctOptionId();
+        List<Long> incorrectOptionIds = questionDTO.options().stream()
+                .map(QuestionOptionDTO::id)
+                .filter(id -> !id.equals(correctOptionId))
                 .collect(Collectors.toList());
-        Collections.shuffle(incorrectOptions);
+        Collections.shuffle(incorrectOptionIds);
 
         // Make on option unavailable
-        incorrectOptions.get(0).setAvailable(false);
+        List<Long> optionsIdToDisable = incorrectOptionIds.subList(0, 1);
 
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        QuestionDTO modifiedQuestion = getModifiedQuestion(questionDTO, optionsIdToDisable);
+
+        QuestionResponse questionResponse = QuestionResponse.from(modifiedQuestion, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         // Pick the first incorrect option
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.HAMMER, questionResponse);
+    }
+
+    private static @NonNull QuestionDTO getModifiedQuestion(QuestionDTO questionDTO, List<Long> incorrectOptionIds) {
+        List<QuestionOptionDTO> modifiedOptions = questionDTO.options().stream()
+                .map(opt -> {
+                    if (incorrectOptionIds.contains(opt.id())) {
+                        return new QuestionOptionDTO(opt.id(), opt.content(), opt.letter(), false);
+                    }
+                    return opt;
+                }).toList();
+
+        return new QuestionDTO(
+                questionDTO.id(),
+                questionDTO.questionText(),
+                modifiedOptions,
+                questionDTO.powerUpDisabled(),
+                questionDTO.correctLetter(),
+                questionDTO.explanation(),
+                questionDTO.correctOptionId(),
+                questionDTO.expiresInSeconds()
+        );
     }
 
     private RewardResult finishSession(GameSessionEntity session) {
