@@ -63,9 +63,7 @@ class UserServiceTest {
     }
 
     private static UserEntity createTestUser(Long id, String username) {
-        UserEntity user = new UserEntity();
-        user.setId(id);
-        user.setUsername(username);
+        UserEntity user = new UserEntity(username);
         return user;
     }
 }

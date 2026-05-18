@@ -11,22 +11,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyEnumerated;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @Entity
+@Table(name = "users")
 @Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class UserEntity {
 
     @Id
@@ -36,6 +30,7 @@ public class UserEntity {
     @Column(unique = true, nullable = false)
     private String username;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     /**
@@ -48,4 +43,16 @@ public class UserEntity {
     @MapKeyEnumerated(EnumType.STRING)
     @Column(name = "quantity")
     private Map<PowerUpType, Integer> inventory = new HashMap<>();
+
+
+    public UserEntity(String username) {
+        this.username = username;
+    }
+
+    protected UserEntity() {}
+
+    public void setBalance(int balance) {
+        this.balance = balance;
+    }
+
 }

@@ -1,13 +1,17 @@
 package com.tenvia.components;
 
 import com.tenvia.entities.GameSessionEntity;
+import com.tenvia.entities.UserEntity;
 import com.tenvia.repositories.GameSessionRepository;
+import com.tenvia.repositories.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,7 +21,7 @@ import java.util.List;
 public class SessionTerminatorIntegrationTest {
 
     @Autowired
-    private EntityManager entityManager;
+    private UserRepository userRepository;
     @Autowired
     private GameSessionRepository gameSessionRepository;
     @Autowired
@@ -25,14 +29,23 @@ public class SessionTerminatorIntegrationTest {
     @Autowired
     private SessionTerminator sessionTerminator;
 
+    private static final List<Long> QUESTION_IDS = List.of(1L, 2L);
+
+    private UserEntity user;
+
+    @BeforeEach
+    public void setUp() {
+        user = new UserEntity("alice");
+        userRepository.save(user);
+    }
+
     @Test
     public void expect_findAndTerminate_OneSession() {
 
-        LocalDateTime now = LocalDateTime.now();
-        GameSessionEntity session1 = GameSessionEntity.createInitial(null, null);
+        int questionTimeLimitInSeconds = 5;
+        GameSessionEntity session1 = new GameSessionEntity(user, QUESTION_IDS, questionTimeLimitInSeconds);
         session1.startSession(5);
-        session1.setEndTime(now.minusHours(1));
-        session1.setOver(false);
+        ReflectionTestUtils.setField(session1, "endTime", LocalDateTime.now().minusHours(1));
 
         gameSessionRepository.saveAllAndFlush(List.of(session1));
 
@@ -44,10 +57,9 @@ public class SessionTerminatorIntegrationTest {
 
     @Test
     public void expect_findAndTerminate_ZeroSession() {
-        LocalDateTime now = LocalDateTime.now();
-        GameSessionEntity session1 = GameSessionEntity.createInitial(null, null);
+        int questionTimeLimitInSeconds = 5;
+        GameSessionEntity session1 = new GameSessionEntity(user, QUESTION_IDS, questionTimeLimitInSeconds);
         session1.startSession(60);
-        session1.setOver(false);
 
         gameSessionRepository.saveAllAndFlush(List.of(session1));
 

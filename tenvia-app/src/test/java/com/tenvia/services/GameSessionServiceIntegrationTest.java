@@ -84,18 +84,13 @@ class GameSessionServiceIntegrationTest {
     private UUID activeSessionId;
     private UserEntity userEntity;
     private GameSessionEntity session;
-
+    private static final List<Long> QUESTION_IDS = List.of(1L, 2L);
     @BeforeEach
     void setUp() {
 
-        userEntity = UserEntity.builder().username("username").id(1L).balance(0).build();
+        userEntity = new UserEntity("username");
 
-        session = new GameSessionEntity();
-        session.setQuestionIds(List.of(1L, 2L));
-        session.setCurrentQuestionIndex(0);
-        session.setOver(false);
-        session.setUser(userEntity);
-        session.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
+        session = new GameSessionEntity(userEntity, QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity saved = gameSessionRepository.save(session);
         activeSessionId = saved.getId();

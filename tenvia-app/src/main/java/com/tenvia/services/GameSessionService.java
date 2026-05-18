@@ -48,11 +48,10 @@ public class GameSessionService {
         List<QuestionDTO> questionDTOList = questionProvider.fetchRandomQuestions(limit);
 
         UserEntity user = userService.findUserById(userId);
-        List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::getId).toList();
+        List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::id).toList();
 
-        GameSessionEntity gameSessionEntity = GameSessionEntity.createInitial(user, questionIds);
+        GameSessionEntity gameSessionEntity = new GameSessionEntity(user, questionIds, sessionConfig.getQuestionTimeLimitInSeconds());
         gameSessionEntity.startSession(sessionConfig.getDurationInSeconds());
-        gameSessionEntity.setQuestionTimeLimitInSeconds(sessionConfig.getQuestionTimeLimitInSeconds());
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
         long remainingDuration = Duration.between(LocalDateTime.now(), savedSession.getEndTime()).getSeconds();
@@ -68,7 +67,7 @@ public class GameSessionService {
             return;
         }
 
-        session.setOver(true);
+        session.endSession();
         log.info("Session: {} has successfully abadoned", sessionId);
     }
 
@@ -87,15 +86,13 @@ public class GameSessionService {
         Long currentQuestionId = session.getQuestionIds().get(currentQuestionIndex);
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
-        boolean isCorrect = questionDTO.getCorrectOptionId().equals(selectedOptionId);
+        boolean isCorrect = questionDTO.correctOptionId().equals(selectedOptionId);
         // Handle correct case
         int newBalance = session.getUser().getBalance();
         if (isCorrect) {
-            // Update Score
-            session.setScore(session.getScore() + 1);
-            session.setCorrectAnswerCount(session.getCorrectAnswerCount() + 1);
+            session.updateCorrectAnswer();
         } else {
-            session.setIncorrectAnswerCount(session.getIncorrectAnswerCount() + 1);
+            session.updateIncorrectAnswer();
         }
 
         // Move on to the next question
@@ -145,7 +142,7 @@ public class GameSessionService {
     public AppliedEffectResult applySwapQuestionOption(UUID sessionId) {
         GameSessionEntity session = getSessionOrThrow(sessionId);
         QuestionDTO questionDTO = questionProvider.swapRandomQuestion(session.getQuestionIds());
-        session.swapCurrentQuestion(questionDTO.getId());
+        session.swapCurrentQuestion(questionDTO.id());
         QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.SWAP_QUESTION, questionResponse);
@@ -162,9 +159,9 @@ public class GameSessionService {
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
-        Integer correctOptionId = questionDTO.getCorrectOptionId();
+        Integer correctOptionId = questionDTO.correctOptionId();
 
-        List<QuestionOptionDTO> incorrectOptions = questionDTO.getOptions().stream()
+        List<QuestionOptionDTO> incorrectOptions = questionDTO.options().stream()
                 .filter(opt -> !opt.getId().equals(correctOptionId))
                 .collect(Collectors.toList());
         Collections.shuffle(incorrectOptions);
@@ -192,8 +189,8 @@ public class GameSessionService {
 
         QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
 
-        Integer correctOptionId = questionDTO.getCorrectOptionId();
-        List<QuestionOptionDTO> incorrectOptions = questionDTO.getOptions().stream()
+        Integer correctOptionId = questionDTO.correctOptionId();
+        List<QuestionOptionDTO> incorrectOptions = questionDTO.options().stream()
                 .filter(opt -> !opt.getId().equals(correctOptionId))
                 .collect(Collectors.toList());
         Collections.shuffle(incorrectOptions);

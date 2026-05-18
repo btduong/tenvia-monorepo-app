@@ -1,5 +1,6 @@
 package com.tenvia.question.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,12 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +19,6 @@ import java.util.List;
 @Entity
 @Table(name = "questions")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class QuestionEntity {
 
     @Id
@@ -39,7 +31,7 @@ public class QuestionEntity {
     @Column(name = "question_text", length = 1000)
     private String questionText;
 
-    @OneToMany(mappedBy = "questionEntity")
+    @OneToMany(mappedBy = "questionEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionOptionEntity> options = new ArrayList<>();
 
     private String correctLetter;
@@ -51,4 +43,16 @@ public class QuestionEntity {
     // @Column(columnDefinition = "TEXT") // for unlimited text
     private String explanation;
 
+    protected QuestionEntity() {}
+
+    public QuestionEntity(String questionText, String correctLetter, String explanation) {
+        this.questionText = questionText;
+        this.correctLetter = correctLetter;
+        this.explanation = explanation;
+    }
+
+    public void addOption(QuestionOptionEntity option) {
+        options.add(option);
+        option.setQuestionEntity(this);
+    }
 }
