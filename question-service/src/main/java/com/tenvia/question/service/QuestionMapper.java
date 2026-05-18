@@ -30,14 +30,10 @@ public final class QuestionMapper {
     }
 
     private static QuestionOptionDTO toOptionDTO(QuestionOptionEntity option) {
-        QuestionOptionDTO questionOptionDTO = new QuestionOptionDTO();
-        questionOptionDTO.setId(option.getId());
-        questionOptionDTO.setContent(option.getContent());
-        questionOptionDTO.setLetter(option.getLetter());
-        return questionOptionDTO;
+        return new QuestionOptionDTO(option.getId(), option.getContent(), option.getLetter(), true);
     }
 
-    private static Integer findCorrectOptionId(QuestionEntity questionEntity) {
+    private static Long findCorrectOptionId(QuestionEntity questionEntity) {
         return questionEntity.getOptions().stream()
                 .filter(opt -> opt.getLetter().equalsIgnoreCase(questionEntity.getCorrectLetter()))
                 .map(QuestionOptionEntity::getId)

@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 public class AnswerRequestDTO {
 
     @NotNull(message = "Question Id must not be null")
-    private Integer questionId;
+    private Long questionId;
 
     @NotNull(message = "Option Id must not be null")
-    private Integer selectedOptionId;
+    private Long selectedOptionId;
 }

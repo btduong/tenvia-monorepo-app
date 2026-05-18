@@ -12,7 +12,7 @@ public record QuestionDTO(Long id,
                           boolean powerUpDisabled,
                           String correctLetter,
                           String explanation,
-                          Integer correctOptionId,
+                          Long correctOptionId,
                           Integer expiresInSeconds) {
 
 }
