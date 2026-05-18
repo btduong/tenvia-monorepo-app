@@ -45,4 +45,14 @@ public class QuestionEntity {
 
     protected QuestionEntity() {}
 
+    public QuestionEntity(String questionText, String correctLetter, String explanation) {
+        this.questionText = questionText;
+        this.correctLetter = correctLetter;
+        this.explanation = explanation;
+    }
+
+    public void addOption(QuestionOptionEntity option) {
+        options.add(option);
+        option.setQuestionEntity(this);
+    }
 }

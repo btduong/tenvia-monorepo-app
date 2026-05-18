@@ -16,22 +16,19 @@ public class QuestionService {
     @Autowired
     private QuestionRepository questionRepository;
 
-    @Autowired
-    private QuestionMapper questionMapper;
-
     public List<QuestionDTO> fetchRandomQuestion(int limit) {
         List<QuestionEntity> randomQuestions = fetchInitialQuestions();
-        return questionMapper.toQuestionDTO(randomQuestions);
+        return QuestionMapper.from(randomQuestions);
     }
 
     public QuestionDTO getQuestionById(Long id) {
         QuestionEntity questionEntity = questionRepository.findById(id).orElseThrow(() -> new RuntimeException("No question with id"));
-        return questionMapper.toQuestionDTO(questionEntity);
+        return QuestionMapper.from(questionEntity);
     }
 
     public QuestionDTO swapQuestion(List<Long> excludedIds) {
         QuestionEntity question = questionRepository.findRandomQuestionExcluding(excludedIds);
-        return questionMapper.toQuestionDTO(question);
+        return QuestionMapper.from(question);
     }
 
     private List<QuestionEntity> fetchInitialQuestions() {
