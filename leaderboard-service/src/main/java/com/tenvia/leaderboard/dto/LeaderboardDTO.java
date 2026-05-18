@@ -1,4 +1,4 @@
-package com.tenvia.leaderboard_ms.dto;
+package com.tenvia.leaderboard.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

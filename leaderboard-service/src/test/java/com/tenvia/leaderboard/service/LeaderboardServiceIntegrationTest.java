@@ -1,7 +1,7 @@
-package com.tenvia.leaderboard_ms.service;
+package com.tenvia.leaderboard.service;
 
 import com.tenvia.common.event.ScoreSubmittedEvent;
-import com.tenvia.leaderboard_ms.repository.LeaderboardRepository;
+import com.tenvia.leaderboard.repository.LeaderboardRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

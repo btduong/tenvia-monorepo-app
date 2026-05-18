@@ -1,4 +1,4 @@
-package com.tenvia.leaderboard_ms.entity;
+package com.tenvia.leaderboard.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

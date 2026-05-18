@@ -1,9 +1,9 @@
-package com.tenvia.leaderboard_ms.service;
+package com.tenvia.leaderboard.service;
 
 import com.tenvia.common.event.ScoreSubmittedEvent;
-import com.tenvia.leaderboard_ms.dto.LeaderboardDTO;
-import com.tenvia.leaderboard_ms.entity.LeaderboardScoreEntity;
-import com.tenvia.leaderboard_ms.repository.LeaderboardRepository;
+import com.tenvia.leaderboard.dto.LeaderboardDTO;
+import com.tenvia.leaderboard.entity.LeaderboardScoreEntity;
+import com.tenvia.leaderboard.repository.LeaderboardRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

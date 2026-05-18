@@ -1,8 +1,8 @@
 package com.tenvia.controller;
 
-import com.tenvia.leaderboard_ms.controller.LeaderboardController;
-import com.tenvia.leaderboard_ms.dto.LeaderboardDTO;
-import com.tenvia.leaderboard_ms.service.LeaderboardService;
+import com.tenvia.leaderboard.controller.LeaderboardController;
+import com.tenvia.leaderboard.dto.LeaderboardDTO;
+import com.tenvia.leaderboard.service.LeaderboardService;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,9 +1,9 @@
 package com.tenvia.services;
 
-import com.tenvia.leaderboard_ms.dto.LeaderboardDTO;
-import com.tenvia.leaderboard_ms.entity.LeaderboardScoreEntity;
-import com.tenvia.leaderboard_ms.repository.LeaderboardRepository;
-import com.tenvia.leaderboard_ms.service.LeaderboardService;
+import com.tenvia.leaderboard.dto.LeaderboardDTO;
+import com.tenvia.leaderboard.entity.LeaderboardScoreEntity;
+import com.tenvia.leaderboard.repository.LeaderboardRepository;
+import com.tenvia.leaderboard.service.LeaderboardService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

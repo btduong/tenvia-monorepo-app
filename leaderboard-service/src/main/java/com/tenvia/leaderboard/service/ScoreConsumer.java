@@ -1,4 +1,4 @@
-package com.tenvia.leaderboard_ms.service;
+package com.tenvia.leaderboard.service;
 
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
