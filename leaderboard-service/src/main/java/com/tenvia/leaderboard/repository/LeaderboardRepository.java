@@ -1,6 +1,6 @@
-package com.tenvia.leaderboard_ms.repository;
+package com.tenvia.leaderboard.repository;
 
-import com.tenvia.leaderboard_ms.entity.LeaderboardScoreEntity;
+import com.tenvia.leaderboard.entity.LeaderboardScoreEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

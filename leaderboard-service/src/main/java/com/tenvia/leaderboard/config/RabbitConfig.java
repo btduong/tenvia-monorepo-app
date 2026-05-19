@@ -1,4 +1,4 @@
-package com.tenvia.config;
+package com.tenvia.leaderboard.config;
 
 import com.tenvia.common.config.RabbitCommonConfig;
 import org.springframework.amqp.core.Binding;
