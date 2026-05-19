@@ -235,11 +235,8 @@ public class GameSessionService {
         int newBalance = userService.updateBalance(session.getUser().getId(), goldEarned);
 
         // Update score
-        ScoreSubmittedEvent scoreSubmittedEvent = ScoreSubmittedEvent.builder()
-                .userName(session.getUser() != null ? session.getUser().getUsername() : "anonymous")
-                .score(session.getScore())
-                .build();
-        log.debug("Submitting score {} for user: {}", scoreSubmittedEvent.getScore(), scoreSubmittedEvent.getUserName());
+        ScoreSubmittedEvent scoreSubmittedEvent = new ScoreSubmittedEvent(session.getUser().getUsername(), session.getScore());
+        log.debug("Submitting score {} for user: {}", scoreSubmittedEvent.score(), scoreSubmittedEvent.userName());
 
         // If RabbitMQ is down then this finishSession will roll back and user's reward will not get updated.
         // The best: implement the Outbox pattern

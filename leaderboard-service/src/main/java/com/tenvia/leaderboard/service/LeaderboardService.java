@@ -28,8 +28,8 @@ public class LeaderboardService {
 
     @Transactional
     public void saveScore(ScoreSubmittedEvent scoreSubmittedEvent) {
-        log.info("Saving score for user: {}, score: {}", scoreSubmittedEvent.getUserName(), scoreSubmittedEvent.getScore());
-        LeaderboardScoreEntity scoreEntity = new LeaderboardScoreEntity(scoreSubmittedEvent.getUserName(), scoreSubmittedEvent.getScore());
+        log.info("Saving score for user: {}, score: {}", scoreSubmittedEvent.userName(), scoreSubmittedEvent.score());
+        LeaderboardScoreEntity scoreEntity = new LeaderboardScoreEntity(scoreSubmittedEvent.userName(), scoreSubmittedEvent.score());
         leaderboardRepository.save(scoreEntity);
     }
 }
