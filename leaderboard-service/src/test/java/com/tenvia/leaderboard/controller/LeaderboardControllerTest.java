@@ -1,4 +1,4 @@
-package com.tenvia.controller;
+package com.tenvia.leaderboard.controller;
 
 import com.tenvia.leaderboard.controller.LeaderboardController;
 import com.tenvia.leaderboard.dto.LeaderboardDTO;

@@ -29,7 +29,8 @@ class LeaderboardServiceTest {
 
     @Test
     void canGetTopScores() {
-        List<LeaderboardScoreEntity> leaderboardScoreEntityList = List.of(new LeaderboardScoreEntity("alice", 10),
+        List<LeaderboardScoreEntity> leaderboardScoreEntityList = List.of(
+                new LeaderboardScoreEntity("alice", 10),
                 new LeaderboardScoreEntity("bob", 20));
         when(leaderboardRepository.findTop10ByOrderByScoreDesc()).thenReturn(leaderboardScoreEntityList);
 
@@ -38,6 +39,9 @@ class LeaderboardServiceTest {
         LeaderboardDTO leaderboardDTO1 = topScores.get(0);
         assertThat(leaderboardDTO1.userName()).isEqualTo("alice");
         assertThat(leaderboardDTO1.score()).isEqualTo(10);
+        LeaderboardDTO leaderboardDTO2 = topScores.get(1);
+        assertThat(leaderboardDTO2.userName()).isEqualTo("bob");
+        assertThat(leaderboardDTO2.score()).isEqualTo(20);
 
     }
 
