@@ -5,18 +5,16 @@ import com.tenvia.leaderboard.dto.LeaderboardDTO;
 import com.tenvia.leaderboard.entity.LeaderboardScoreEntity;
 import com.tenvia.leaderboard.repository.LeaderboardRepository;
 import jakarta.transaction.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class LeaderboardService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LeaderboardService.class);
 
     @Autowired
     private LeaderboardRepository leaderboardRepository;
@@ -24,19 +22,14 @@ public class LeaderboardService {
     @Cacheable(value = "topScores")
     public List<LeaderboardDTO> getTopScores() {
         return leaderboardRepository.findTop10ByOrderByScoreDesc().stream()
-                .map(leaderboardScoreEntity -> LeaderboardDTO.builder()
-                        .score(leaderboardScoreEntity.getScore())
-                        .userName(leaderboardScoreEntity.getUsername())
-                        .build())
+                .map(LeaderboardDTO::from)
                 .toList();
     }
 
     @Transactional
     public void saveScore(ScoreSubmittedEvent scoreSubmittedEvent) {
-        LOG.info("Saving score for user: {}, score: {}", scoreSubmittedEvent.getUserName(), scoreSubmittedEvent.getScore());
-        LeaderboardScoreEntity scoreEntity = new LeaderboardScoreEntity();
-        scoreEntity.setScore(scoreSubmittedEvent.getScore());
-        scoreEntity.setUsername(scoreSubmittedEvent.getUserName());
+        log.info("Saving score for user: {}, score: {}", scoreSubmittedEvent.getUserName(), scoreSubmittedEvent.getScore());
+        LeaderboardScoreEntity scoreEntity = new LeaderboardScoreEntity(scoreSubmittedEvent.getUserName(), scoreSubmittedEvent.getScore());
         leaderboardRepository.save(scoreEntity);
     }
 }

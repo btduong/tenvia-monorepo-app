@@ -1,16 +1,10 @@
 package com.tenvia.leaderboard.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.tenvia.leaderboard.entity.LeaderboardScoreEntity;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class LeaderboardDTO {
+public record LeaderboardDTO(String userName, Integer score) {
 
-    private String userName;
-    private Integer score;
+    public static LeaderboardDTO from(LeaderboardScoreEntity leaderboardScore) {
+        return new LeaderboardDTO(leaderboardScore.getUsername(), leaderboardScore.getScore());
+    }
 }
