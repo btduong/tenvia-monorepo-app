@@ -40,7 +40,7 @@ class QuestionServiceTest {
         opt1 = new QuestionOptionEntity("A", "opt_content");
         questionEntity = new QuestionEntity("who are you", "A", "explained");
         questionEntity.addOption(opt1);
-        ReflectionTestUtils.setField(opt1, "id", 1);
+        ReflectionTestUtils.setField(opt1, "id", 1L);
     }
 
     @Test

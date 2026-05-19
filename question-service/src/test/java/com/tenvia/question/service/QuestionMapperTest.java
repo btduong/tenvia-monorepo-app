@@ -19,7 +19,7 @@ class QuestionMapperTest {
         QuestionEntity questionEntity = new QuestionEntity("who are you", "A", "explained");
         questionEntity.addOption(opt1);
 
-        ReflectionTestUtils.setField(opt1, "id", 1);
+        ReflectionTestUtils.setField(opt1, "id", 1L);
 
         QuestionDTO questionDTO = QuestionMapper.from(questionEntity);
         assertNotNull(questionDTO);
@@ -37,8 +37,8 @@ class QuestionMapperTest {
         QuestionEntity questionEntity2 = new QuestionEntity("who am I", "B", "question_2_explained");
         questionEntity2.addOption(opt2);
 
-        ReflectionTestUtils.setField(opt1, "id", 1);
-        ReflectionTestUtils.setField(opt2, "id", 2);
+        ReflectionTestUtils.setField(opt1, "id", 1L);
+        ReflectionTestUtils.setField(opt2, "id", 2L);
 
         List<QuestionDTO> result = QuestionMapper.from(List.of(questionEntity, questionEntity2));
 
