@@ -4,6 +4,7 @@ import com.tenvia.PowerUpType;
 import com.tenvia.dto.UserDTO;
 import com.tenvia.services.InventoryService;
 import com.tenvia.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/shop")
 public class ShopController {
-
-    private final Logger LOG = LoggerFactory.getLogger(ShopController.class);
 
     @Autowired
     private UserService userService;
@@ -28,7 +28,7 @@ public class ShopController {
     @PostMapping("/buy")
     public ResponseEntity<UserDTO> buyItem(@RequestParam Long userId, @RequestParam PowerUpType type) {
 
-        LOG.debug("Buy {} request from:{}", type, userId);
+        log.debug("Buy {} request from:{}", type, userId);
 
         int price = 0; // Make it free for now.
         userService.updateBalance(userId, -price);
