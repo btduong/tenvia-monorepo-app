@@ -1,17 +1,23 @@
 package com.tenvia.services;
 
+import com.tenvia.PowerUpType;
+import com.tenvia.dto.UserDTO;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.UserIdNotFoundException;
 import com.tenvia.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
+import static com.tenvia.PowerUpType.HAMMER;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,14 +30,19 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
     @InjectMocks
     private UserService userService;
 
+    private static final String username = "alice";
+    private UserEntity user;
+
+    @BeforeEach
+    public void setUp() {
+        user = new UserEntity(username);
+    }
+
     @Test
     void loginUser_expectExistingUser_whenUserAlreadyExists() {
-        String username = "abc";
-        UserEntity user = createTestUser(1L, username);
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
@@ -44,8 +55,6 @@ class UserServiceTest {
 
     @Test
     void loginUser_expectNewUserCreated() {
-        String username = "abc";
-        UserEntity user = createTestUser(1L, username);
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
         when(userRepository.save(any(UserEntity.class))).thenReturn(user);
@@ -57,13 +66,43 @@ class UserServiceTest {
     }
 
     @Test
-    void findExistingUser_whenNotFound_expectException() {
+    void expectException_whenFindExistingUser_returnEmpty() {
         when(userRepository.findById(123L)).thenReturn(Optional.empty());
         assertThrows(UserIdNotFoundException.class, () -> userService.findUserById(123L));
     }
 
-    private static UserEntity createTestUser(Long id, String username) {
-        UserEntity user = new UserEntity(username);
-        return user;
+    @Test
+    void canAddItem() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        UserDTO userDTO = userService.addItem(1L, HAMMER, 1);
+        assertThat(userDTO).isNotNull();
+        assertThat(userDTO.inventory().size()).isEqualTo(1);
+        assertThat(userDTO.inventory().get(HAMMER)).isEqualTo(1);
+
+    }
+
+    @Test
+    void expectException_whenAddItem_withNegativeQuantity() {
+        int invalidQuantity = -1;
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userService.addItem(1L, HAMMER, invalidQuantity));
+        assertThat(exception.getMessage()).isEqualTo("Quantity must be > 0. Received: " + invalidQuantity);
+    }
+
+    @Test
+    void canUseItem() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        userService.addItem(1L, HAMMER, 5);
+
+        UserDTO userDTO = userService.useItem(1L, HAMMER);
+        assertThat(userDTO.inventory().get(HAMMER)).isEqualTo(4);
+    }
+
+    @Test
+    void expectException_whenInventoryHaveInsufficientQuantity() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        assertThrows(IllegalStateException.class ,() -> userService.useItem(1L, HAMMER));
     }
 }

@@ -99,7 +99,6 @@ class GameSessionServiceIntegrationTest {
     @Test
     @DisplayName("Question index increases regardless answer is correct or not")
     void validateAnswer_databasePersistData_expectSuccess() {
-        when(userService.updateBalance(anyLong(), anyInt())).thenReturn(1);
 
         // question 1 - incorrect
         QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();

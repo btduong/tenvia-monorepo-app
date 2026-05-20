@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/users")
-@Validated // required for method level validation
 public class UserController {
 
     @Autowired

@@ -1,27 +1,19 @@
 package com.tenvia.services;
 
+import com.tenvia.PowerUpType;
 import com.tenvia.dto.UserDTO;
-import com.tenvia.entities.InventoryEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.UserIdNotFoundException;
-import com.tenvia.repositories.InventoryRepository;
 import com.tenvia.repositories.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.apache.catalina.User;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
 
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private InventoryRepository inventoryRepository;
 
     public UserEntity login(String username) {
         return userRepository.findByUsername(username)
@@ -35,47 +27,22 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new UserIdNotFoundException(id));
     }
 
-    /**
-     * Update a user balance from the provided amount.
-     *
-     * @param userId
-     * @param amount
-     * @return
-     */
-    public int updateBalance(Long userId, int amount) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserIdNotFoundException(userId));
-
-        // Calculate new balance
-        int currentBalance = user.getBalance() != null ? user.getBalance() : 0;
-        int newBalance = currentBalance + amount;
-
-        // Can't spend more than the balance
-        if (newBalance < 0) {
-            throw new IllegalStateException("Insufficient gold coins!");
-        }
-
-        // Update user's balance
-        user.setBalance(newBalance);
-        userRepository.save(user);
-
-        return newBalance;
-    }
-
     public UserDTO getUserById(Long userId) {
         UserEntity user = userRepository.findById(userId).orElseThrow();
+        return UserDTO.from(user);
+    }
 
-        // Fetch the inventory associated with this user
-        InventoryEntity inventory = inventoryRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory missing"));
+    @Transactional
+    public UserDTO addItem(Long userId, PowerUpType type, int quantity) {
+        UserEntity userEntity = findUserById(userId);
+        userEntity.addPowerUp(type, quantity);
+        return UserDTO.from(userEntity);
+    }
 
-        // Build the DTO
-        return new UserDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getCreatedAt(),
-                user.getBalance(),
-                inventory.getItems() // This is the Map<PowerUpType, Integer>
-        );
+    @Transactional
+    public UserDTO useItem(Long userId, PowerUpType type) {
+        UserEntity userEntity = findUserById(userId);
+        userEntity.consumePowerUp(type);
+        return UserDTO.from(userEntity);
     }
 }
