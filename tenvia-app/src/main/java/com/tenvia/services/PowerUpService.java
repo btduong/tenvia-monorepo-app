@@ -4,7 +4,6 @@ import com.tenvia.PowerUpType;
 import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.dto.PowerUpResponseDTO;
 import com.tenvia.dto.UserDTO;
-import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +27,6 @@ public class PowerUpService {
             case SWAP_QUESTION -> gameSessionService.applySwapQuestionOption(sessionId);
         };
 
-        return new PowerUpResponseDTO(userService.getUserById(userId), effectData);
+        return new PowerUpResponseDTO(userDTO, effectData);
     }
 }

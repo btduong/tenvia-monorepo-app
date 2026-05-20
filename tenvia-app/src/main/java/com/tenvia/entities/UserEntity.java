@@ -65,6 +65,9 @@ public class UserEntity {
      * @param type PowerUpType
      */
     public void addPowerUp(PowerUpType type, int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity must be > 0. Received: " + quantity);
+        }
         int current = inventory.getOrDefault(type, 0);
         inventory.put(type, current + quantity);
     }
