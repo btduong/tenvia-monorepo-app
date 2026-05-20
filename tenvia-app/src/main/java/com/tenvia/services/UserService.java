@@ -1,27 +1,17 @@
 package com.tenvia.services;
 
 import com.tenvia.dto.UserDTO;
-import com.tenvia.entities.InventoryEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.UserIdNotFoundException;
-import com.tenvia.repositories.InventoryRepository;
 import com.tenvia.repositories.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
 
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private InventoryRepository inventoryRepository;
 
     public UserEntity login(String username) {
         return userRepository.findByUsername(username)
@@ -64,18 +54,6 @@ public class UserService {
 
     public UserDTO getUserById(Long userId) {
         UserEntity user = userRepository.findById(userId).orElseThrow();
-
-        // Fetch the inventory associated with this user
-        InventoryEntity inventory = inventoryRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory missing"));
-
-        // Build the DTO
-        return new UserDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getCreatedAt(),
-                user.getBalance(),
-                inventory.getItems() // This is the Map<PowerUpType, Integer>
-        );
+        return UserDTO.from(user);
     }
 }

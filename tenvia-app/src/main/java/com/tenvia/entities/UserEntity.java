@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -38,11 +39,14 @@ public class UserEntity {
      */
     private Integer balance = 0;
 
+    /**
+     * A map for storing a power type and the quantity.
+     */
     @ElementCollection
-    @CollectionTable(name = "user_inventory", joinColumns = @JoinColumn(name = "user_id"))
-    @MapKeyEnumerated(EnumType.STRING)
+    @CollectionTable(name = "user_powerups", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "powerup_type")
     @Column(name = "quantity")
-    private Map<PowerUpType, Integer> inventory = new HashMap<>();
+    private Map<PowerUpType, Integer> powerUps = new HashMap<>();
 
 
     public UserEntity(String username) {
