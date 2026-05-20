@@ -24,6 +24,4 @@ public class PowerUpController {
         PowerUpResponseDTO powerUpResponseDTO = powerUpService.applyPowerUp(userId, sessionId, type);
         return ResponseEntity.ok(powerUpResponseDTO);
     }
-
-
 }
