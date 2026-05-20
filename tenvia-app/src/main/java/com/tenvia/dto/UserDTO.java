@@ -18,6 +18,6 @@ public record UserDTO(Long id,
                 userEntity.getUsername(),
                 userEntity.getCreatedAt(),
                 userEntity.getBalance(),
-                userEntity.getPowerUps());
+                userEntity.getInventory());
     }
 }

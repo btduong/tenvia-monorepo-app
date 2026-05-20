@@ -18,9 +18,9 @@ public class InventoryService {
 
     @Transactional
     public void useItem(Long userId, PowerUpType itemName) {
-        UserEntity userEntity = getOrCreateInventory(userId);
+        UserEntity userEntity = getInventoryOrThrow(userId);
 
-        Map<PowerUpType, Integer> items = userEntity.getPowerUps();
+        Map<PowerUpType, Integer> items = userEntity.getInventory();
         int currentAmount = items.getOrDefault(itemName, 0);
 
         if (currentAmount <= 0) {
@@ -32,15 +32,15 @@ public class InventoryService {
 
     @Transactional
     public Map<PowerUpType, Integer> addItem(Long userId, PowerUpType type, int quantity) {
-        UserEntity userEntity = getOrCreateInventory(userId);
+        UserEntity userEntity = getInventoryOrThrow(userId);
 
-        Map<PowerUpType, Integer> items = userEntity.getPowerUps();
+        Map<PowerUpType, Integer> items = userEntity.getInventory();
         int currentCount = items.getOrDefault(type, 0);
         items.put(type, currentCount + quantity);
         return items;
     }
 
-    private UserEntity getOrCreateInventory(Long userId) {
+    private UserEntity getInventoryOrThrow(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new UserIdNotFoundException(userId));
     }
 
