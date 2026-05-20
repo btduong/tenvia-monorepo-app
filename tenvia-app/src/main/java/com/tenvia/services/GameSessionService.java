@@ -100,8 +100,7 @@ public class GameSessionService {
         session.advanceQuestionIndex();
 
         if (session.isOver()) {
-            RewardResult rewardResult = finishSession(session);
-            newBalance = rewardResult.newTotalBalance();
+            finishSession(session);
         }
 
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount(), session.getSkipQuestionCount());
@@ -232,7 +231,6 @@ public class GameSessionService {
     private RewardResult finishSession(GameSessionEntity session) {
 
         int goldEarned = rewardService.calculateGold(session);
-        int newBalance = userService.updateBalance(session.getUser().getId(), goldEarned);
 
         // Update score
         ScoreSubmittedEvent scoreSubmittedEvent = new ScoreSubmittedEvent(session.getUser().getUsername(), session.getScore());
@@ -242,7 +240,7 @@ public class GameSessionService {
         // The best: implement the Outbox pattern
         scoreProducer.sendUpdate(scoreSubmittedEvent);
 
-        return new RewardResult(session.getScore(), goldEarned, newBalance);
+        return new RewardResult(session.getScore(), goldEarned);
     }
 
     private GameSessionEntity getSessionOrThrow(UUID sessionId) {

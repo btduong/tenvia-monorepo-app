@@ -25,33 +25,6 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new UserIdNotFoundException(id));
     }
 
-    /**
-     * Update a user balance from the provided amount.
-     *
-     * @param userId
-     * @param amount
-     * @return
-     */
-    public int updateBalance(Long userId, int amount) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserIdNotFoundException(userId));
-
-        // Calculate new balance
-        int currentBalance = user.getBalance() != null ? user.getBalance() : 0;
-        int newBalance = currentBalance + amount;
-
-        // Can't spend more than the balance
-        if (newBalance < 0) {
-            throw new IllegalStateException("Insufficient gold coins!");
-        }
-
-        // Update user's balance
-        user.setBalance(newBalance);
-        userRepository.save(user);
-
-        return newBalance;
-    }
-
     public UserDTO getUserById(Long userId) {
         UserEntity user = userRepository.findById(userId).orElseThrow();
         return UserDTO.from(user);

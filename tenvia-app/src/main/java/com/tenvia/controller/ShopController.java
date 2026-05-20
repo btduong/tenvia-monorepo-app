@@ -30,9 +30,6 @@ public class ShopController {
 
         log.debug("Buy {} request from:{}", type, userId);
 
-        int price = 0; // Make it free for now.
-        userService.updateBalance(userId, -price);
-
         inventoryService.addItem(userId, type, 1);
         UserDTO userDTO = userService.getUserById(userId);
 

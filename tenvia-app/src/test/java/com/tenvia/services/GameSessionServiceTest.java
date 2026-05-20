@@ -170,7 +170,6 @@ class GameSessionServiceTest {
     void finishSession_getBaseResult_noCorrectQuestion() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(rewardService.calculateGold(session)).thenReturn(5);
-        when(userService.updateBalance(any(), isA(Integer.class))).thenReturn(5);
         when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
 
         AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L);
