@@ -29,8 +29,6 @@ import static org.mockito.Mockito.when;
 class PowerUpServiceTest {
 
     @Mock
-    private InventoryService inventoryService;
-    @Mock
     private GameSessionService gameSessionService;
     @Mock
     private UserService userService;

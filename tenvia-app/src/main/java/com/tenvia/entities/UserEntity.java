@@ -60,4 +60,25 @@ public class UserEntity {
         this.balance = balance;
     }
 
+    /**
+     * Add a power-up item by the quantity to the inventory.
+     * @param type PowerUpType
+     */
+    public void addPowerUp(PowerUpType type, int quantity) {
+        int current = inventory.getOrDefault(type, 0);
+        inventory.put(type, current + quantity);
+    }
+
+    /**
+     * Consume a power-up item.
+     * @param type PowerUpType
+     */
+    public void consumePowerUp(PowerUpType type) {
+        int current = inventory.getOrDefault(type, 0);
+        if (current <= 0) {
+            throw new IllegalStateException("You don't own any " + type);
+        }
+        inventory.put(type, current - 1);
+    }
+
 }
