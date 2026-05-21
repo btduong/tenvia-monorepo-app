@@ -13,7 +13,6 @@
         <module>tenvia-app</module>
         <module>tenvia-common</module>
         <module>leaderboard-service</module>
-        <module>question-service</module>
     </modules>
 
 </project>
