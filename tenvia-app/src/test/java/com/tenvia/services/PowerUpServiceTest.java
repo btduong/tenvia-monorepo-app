@@ -59,7 +59,7 @@ class PowerUpServiceTest {
         QuestionResponse questionResponse = new QuestionResponse(1L, "Q1", options, false, 15, 0);
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult(true, PowerUpType.HAMMER, questionResponse);
         when(gameSessionService.applyHammerOption(sessionId)).thenReturn(appliedEffectResult);
-        when(userService.getUserById(userId)).thenReturn(userDTO);
+        when(userService.useItem(userId, PowerUpType.HAMMER)).thenReturn(userDTO);
 
         PowerUpResponseDTO result = powerUpService.applyPowerUp(userId, sessionId, PowerUpType.HAMMER);
         assertEquals("Bob", result.updatedUser().username());
@@ -79,7 +79,7 @@ class PowerUpServiceTest {
         QuestionResponse questionResponse = new QuestionResponse(1L, "Q1", options, false, 15, 0);
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult( true, PowerUpType.FIFTY_FIFTY, questionResponse);
         when(gameSessionService.applyFiftyFiftyOption(sessionId)).thenReturn(appliedEffectResult);
-        when(userService.getUserById(userId)).thenReturn(userDTO);
+        when(userService.useItem(userId, PowerUpType.FIFTY_FIFTY)).thenReturn(userDTO);
 
         PowerUpResponseDTO result = powerUpService.applyPowerUp(userId, sessionId, PowerUpType.FIFTY_FIFTY);
 

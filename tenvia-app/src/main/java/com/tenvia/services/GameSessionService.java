@@ -12,7 +12,6 @@ import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.dto.GameSessionSummary;
 import com.tenvia.dto.QuestionResponse;
-import com.tenvia.dto.RewardResult;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.GameSessionOverException;
@@ -39,7 +38,6 @@ public class GameSessionService {
 
     private final GameSessionRepository gameSessionRepository;
     private final UserService userService;
-    private final RewardService rewardService;
     private final QuestionProvider questionProvider;
     private final ScoreProducer scoreProducer;
     private final SessionConfig sessionConfig;
@@ -228,19 +226,14 @@ public class GameSessionService {
         );
     }
 
-    private RewardResult finishSession(GameSessionEntity session) {
-
-        int goldEarned = rewardService.calculateGold(session);
-
-        // Update score
+    private void finishSession(GameSessionEntity session) {
+        // Publish the score
         ScoreSubmittedEvent scoreSubmittedEvent = new ScoreSubmittedEvent(session.getUser().getUsername(), session.getScore());
         log.debug("Submitting score {} for user: {}", scoreSubmittedEvent.score(), scoreSubmittedEvent.userName());
 
         // If RabbitMQ is down then this finishSession will roll back and user's reward will not get updated.
         // The best: implement the Outbox pattern
         scoreProducer.sendUpdate(scoreSubmittedEvent);
-
-        return new RewardResult(session.getScore(), goldEarned);
     }
 
     private GameSessionEntity getSessionOrThrow(UUID sessionId) {
