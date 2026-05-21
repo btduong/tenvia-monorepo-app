@@ -34,7 +34,6 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -72,8 +71,6 @@ class GameSessionServiceIntegrationTest {
     @MockitoBean
     private QuestionProvider questionProvider;
     @MockitoBean
-    private RewardService rewardService;
-    @MockitoBean
     private UserService userService;
 
     @Autowired
@@ -109,7 +106,6 @@ class GameSessionServiceIntegrationTest {
         assertEquals(0, updatedSession.getScore());
 
         // question 2 - correct
-        when(rewardService.grantGold(session.getUser().getId(), 1)).thenReturn(1);
         QuestionDTO questionDTO2 = QuestionDTO.builder().correctOptionId(400L).build();
         when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO2);
         gameSessionService.validateAnswer(activeSessionId, 400L);

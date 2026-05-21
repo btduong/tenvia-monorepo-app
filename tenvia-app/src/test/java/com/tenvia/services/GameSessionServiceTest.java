@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
 
 
@@ -40,8 +39,6 @@ class GameSessionServiceTest {
     private GameSessionRepository gameSessionRepository;
     @Mock
     private UserService userService;
-    @Mock
-    private RewardService rewardService;
     @Mock
     private QuestionProvider questionProvider;
     @Mock
@@ -169,7 +166,6 @@ class GameSessionServiceTest {
     @Test
     void finishSession_getBaseResult_noCorrectQuestion() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-        when(rewardService.calculateGold(session)).thenReturn(5);
         when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
 
         AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L);
