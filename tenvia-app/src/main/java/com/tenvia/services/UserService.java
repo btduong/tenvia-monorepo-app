@@ -27,11 +27,6 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new UserIdNotFoundException(id));
     }
 
-    public UserDTO getUserById(Long userId) {
-        UserEntity user = userRepository.findById(userId).orElseThrow();
-        return UserDTO.from(user);
-    }
-
     @Transactional
     public UserDTO addItem(Long userId, PowerUpType type, int quantity) {
         UserEntity userEntity = findUserById(userId);
