@@ -3,7 +3,6 @@ package com.tenvia.services;
 import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
-import com.tenvia.components.QuestionProvider;
 import com.tenvia.components.ScoreProducer;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
@@ -11,6 +10,7 @@ import com.tenvia.dto.AppliedEffectResult;
 import com.tenvia.dto.GameSessionDTO;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
+import com.tenvia.question.service.QuestionService;
 import com.tenvia.repositories.GameSessionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,11 +40,11 @@ class GameSessionServiceTest {
     @Mock
     private UserService userService;
     @Mock
-    private QuestionProvider questionProvider;
-    @Mock
     private ScoreProducer scoreProducer;
     @Mock
     private SessionConfig sessionConfig;
+    @Mock
+    private QuestionService questionService;
 
     @InjectMocks
     private GameSessionService gameSessionService;
@@ -77,7 +77,7 @@ class GameSessionServiceTest {
         List<QuestionDTO> randomQuestions = List.of(questionDTO);
 
         when(userService.findUserById(1L)).thenReturn(userEntity);
-        when(questionProvider.fetchRandomQuestions(anyInt())).thenReturn(randomQuestions);
+        when(questionService.fetchRandomQuestion(anyInt())).thenReturn(randomQuestions);
         when(gameSessionRepository.save(any())).thenReturn(session);
 
         GameSessionDTO newSession = gameSessionService.createNewSession(1L, 1);
@@ -89,14 +89,14 @@ class GameSessionServiceTest {
 
     @Test
     void createNewSession_expectException_whenNoQuestionAvailable() {
-        when(questionProvider.fetchRandomQuestions(anyInt())).thenThrow(new RuntimeException("Failed"));
+        when(questionService.fetchRandomQuestion(anyInt())).thenThrow(new RuntimeException("Failed"));
         assertThrows(RuntimeException.class, () -> gameSessionService.createNewSession(1L, 1));
     }
 
     @Test
     void validateAnswer_expectIncreaseIndex() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-        when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
+        when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
 
         AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L);
 
@@ -116,7 +116,7 @@ class GameSessionServiceTest {
     @Test
     void validateAnswer_lastQuestionCorrect_expectGameOver() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-        when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
+        when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
 
         AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L);
 
@@ -128,7 +128,7 @@ class GameSessionServiceTest {
     @Test
     void applyFiftyFiftyOption_expectTwoIds() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-        when(questionProvider.fetchQuestionById(1L)).thenReturn(questionDTO);
+        when(questionService.getQuestionById(1L)).thenReturn(questionDTO);
 
         AppliedEffectResult result = gameSessionService.applyFiftyFiftyOption(sessionId);
 
@@ -139,7 +139,7 @@ class GameSessionServiceTest {
     @Test
     void applyHammerOption_expectOneId() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-        when(questionProvider.fetchQuestionById(1L)).thenReturn(questionDTO);
+        when(questionService.getQuestionById(1L)).thenReturn(questionDTO);
 
         AppliedEffectResult result = gameSessionService.applyHammerOption(sessionId);
 
@@ -166,7 +166,7 @@ class GameSessionServiceTest {
     @Test
     void finishSession_getBaseResult_noCorrectQuestion() {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-        when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
+        when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
 
         AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L);
         assertTrue(session.isOver());

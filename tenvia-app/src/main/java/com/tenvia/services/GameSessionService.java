@@ -4,7 +4,6 @@ import com.tenvia.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
-import com.tenvia.components.QuestionProvider;
 import com.tenvia.components.ScoreProducer;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
@@ -16,6 +15,7 @@ import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
 import com.tenvia.exception.GameSessionOverException;
 import com.tenvia.exception.SessionNotFoundException;
+import com.tenvia.question.service.QuestionService;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -38,13 +38,13 @@ public class GameSessionService {
 
     private final GameSessionRepository gameSessionRepository;
     private final UserService userService;
-    private final QuestionProvider questionProvider;
     private final ScoreProducer scoreProducer;
     private final SessionConfig sessionConfig;
+    private final QuestionService questionService;
 
 
     public GameSessionDTO createNewSession(Long userId, int limit) {
-        List<QuestionDTO> questionDTOList = questionProvider.fetchRandomQuestions(limit);
+        List<QuestionDTO> questionDTOList = questionService.fetchRandomQuestion(limit);
 
         UserEntity user = userService.findUserById(userId);
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::id).toList();
@@ -84,7 +84,7 @@ public class GameSessionService {
         int currentQuestionIndex = session.getCurrentQuestionIndex();
         Long currentQuestionId = session.getQuestionIds().get(currentQuestionIndex);
 
-        QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
+        QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
         boolean isCorrect = questionDTO.correctOptionId().equals(selectedOptionId);
         // Handle correct case
         int newBalance = session.getUser().getBalance();
@@ -130,7 +130,7 @@ public class GameSessionService {
         }
 
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
-        QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
+        QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
 
         session.startNewQuestion();
 
@@ -139,7 +139,7 @@ public class GameSessionService {
 
     public AppliedEffectResult applySwapQuestionOption(UUID sessionId) {
         GameSessionEntity session = getSessionOrThrow(sessionId);
-        QuestionDTO questionDTO = questionProvider.swapRandomQuestion(session.getQuestionIds());
+        QuestionDTO questionDTO = questionService.swapQuestion(session.getQuestionIds());
         session.swapCurrentQuestion(questionDTO.id());
         QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
@@ -156,7 +156,7 @@ public class GameSessionService {
 
         Long currentQuestionId = session.getCurrentQuestionId();
 
-        QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
+        QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
         Long correctOptionId = questionDTO.correctOptionId();
 
         List<Long> incorrectOptionIds = questionDTO.options().stream()
@@ -185,7 +185,7 @@ public class GameSessionService {
         session.addActivatedPowerUp(PowerUpType.HAMMER);
 
         Long currentQuestionId = session.getCurrentQuestionId();
-        QuestionDTO questionDTO = questionProvider.fetchQuestionById(currentQuestionId);
+        QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
 
         Long correctOptionId = questionDTO.correctOptionId();
         List<Long> incorrectOptionIds = questionDTO.options().stream()

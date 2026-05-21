@@ -2,12 +2,12 @@ package com.tenvia.services;
 
 import com.tenvia.TenviaApplication;
 import com.tenvia.common.dto.QuestionDTO;
-import com.tenvia.components.QuestionProvider;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.dto.AnswerResponseDTO;
 import com.tenvia.dto.QuestionResponse;
 import com.tenvia.entities.GameSessionEntity;
 import com.tenvia.entities.UserEntity;
+import com.tenvia.question.service.QuestionService;
 import com.tenvia.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,9 +69,9 @@ class GameSessionServiceIntegrationTest {
     @Autowired
     private GameSessionRepository gameSessionRepository;
     @MockitoBean
-    private QuestionProvider questionProvider;
-    @MockitoBean
     private UserService userService;
+    @MockitoBean
+    private QuestionService questionService;
 
     @Autowired
     private SessionConfig sessionConfig;
@@ -99,7 +99,7 @@ class GameSessionServiceIntegrationTest {
 
         // question 1 - incorrect
         QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();
-        when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
+        when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
         gameSessionService.validateAnswer(activeSessionId, 100L);
         GameSessionEntity updatedSession = gameSessionRepository.findById(activeSessionId).get();
         assertEquals(1, updatedSession.getCurrentQuestionIndex());
@@ -107,7 +107,7 @@ class GameSessionServiceIntegrationTest {
 
         // question 2 - correct
         QuestionDTO questionDTO2 = QuestionDTO.builder().correctOptionId(400L).build();
-        when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO2);
+        when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO2);
         gameSessionService.validateAnswer(activeSessionId, 400L);
         updatedSession = gameSessionRepository.findById(activeSessionId).get();
         assertEquals(2, updatedSession.getCurrentQuestionIndex());
@@ -116,14 +116,14 @@ class GameSessionServiceIntegrationTest {
 
     @Test
     void createNewSession_expectException_whenDatabaseIsEmpty() {
-        when(questionProvider.fetchRandomQuestions(10)).thenThrow(new RuntimeException("Failed"));
+        when(questionService.fetchRandomQuestion(10)).thenThrow(new RuntimeException("Failed"));
         assertThrows(RuntimeException.class, () -> gameSessionService.createNewSession(1L, 10));
     }
 
     @Test
     void expectSkipValidation_whenQuestionTimedOut() {
         QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();
-        when(questionProvider.fetchQuestionById(anyLong())).thenReturn(questionDTO);
+        when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
         QuestionResponse nextQuestion = gameSessionService.getNextQuestion(activeSessionId);
         assertEquals(0, nextQuestion.index());
 
