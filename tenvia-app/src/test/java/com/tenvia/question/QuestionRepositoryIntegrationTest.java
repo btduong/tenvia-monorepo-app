@@ -1,6 +1,6 @@
-package com.tenvia.question.service;
+package com.tenvia.question;
 
-import com.tenvia.QuestionServiceApp;
+import com.tenvia.TenviaApplication;
 import com.tenvia.question.entities.QuestionEntity;
 import com.tenvia.question.repositories.QuestionRepository;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ContextConfiguration(classes = QuestionServiceApp.class)
+@ContextConfiguration(classes = TenviaApplication.class)
 @DataJpaTest
 class QuestionRepositoryIntegrationTest {
 

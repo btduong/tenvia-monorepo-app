@@ -1,9 +1,11 @@
-package com.tenvia.question.service;
+package com.tenvia.question;
 
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.question.entities.QuestionEntity;
 import com.tenvia.question.entities.QuestionOptionEntity;
 import com.tenvia.question.repositories.QuestionRepository;
+import com.tenvia.question.service.QuestionMapper;
+import com.tenvia.question.service.QuestionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.management.RuntimeErrorException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

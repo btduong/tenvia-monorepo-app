@@ -1,8 +1,9 @@
-package com.tenvia.question.service;
+package com.tenvia.question;
 
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.question.entities.QuestionEntity;
 import com.tenvia.question.entities.QuestionOptionEntity;
+import com.tenvia.question.service.QuestionMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
