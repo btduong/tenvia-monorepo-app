@@ -227,7 +227,7 @@ public class GameSessionService {
     }
 
     private void finishSession(GameSessionEntity session) {
-        // Update score
+        // Publish the score
         ScoreSubmittedEvent scoreSubmittedEvent = new ScoreSubmittedEvent(session.getUser().getUsername(), session.getScore());
         log.debug("Submitting score {} for user: {}", scoreSubmittedEvent.score(), scoreSubmittedEvent.userName());
 
