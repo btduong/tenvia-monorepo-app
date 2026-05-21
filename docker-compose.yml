@@ -43,16 +43,7 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
-      - QUESTION_SERVICE_URL=http://question-service:8083
       - SESSION_TERMINATOR.SCHEDULE.RATE=600000 #session.terminator.schedule.rate
     depends_on:
       rabbitmq:
         condition: service_healthy
-
-  question-service:
-    image: question-service:latest # The name it will create
-    build:
-      context: .
-      dockerfile: question-service/Dockerfile
-    ports:
-      - "8083:8083"
