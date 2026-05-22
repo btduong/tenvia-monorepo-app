@@ -22,12 +22,8 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: QUESTION_SERVICE_URL
-          value: "http://question-service:8083"
         - name: profile
           value: "dev"
-        - name: QUESTION_SERVICE_PORT
-          value: "8083"
 
 ---
 apiVersion: v1
