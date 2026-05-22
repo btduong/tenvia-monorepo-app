@@ -21,7 +21,7 @@ fi
 eval $(minikube docker-env)
 
 # 2. Define the services to build (matching your matrix names)
-SERVICES=("question-service" "tenvia-app")
+SERVICES=("leaderboard-service" "tenvia-app")
 
 echo "Building images inside Minikube..."
 

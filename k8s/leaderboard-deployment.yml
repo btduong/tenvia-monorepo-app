@@ -1,0 +1,70 @@
+# Deployment leaderboard-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leaderboard-service
+  labels:
+    app: leaderboard-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: leaderboard-service
+  template:
+    metadata:
+      labels:
+        app: leaderboard-service
+    spec:
+      containers:
+      - name: leaderboard-service
+        image: leaderboard-service:0.0.1-SNAPSHOT
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8081
+
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: dev
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq"
+        - name: SPRING_RABBITMQ_PORT
+          value: "5672"
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+
+        # Readiness Probe: gate the traffic until the app is healthy
+        readinessProbe:
+          httpGet:
+            path: "/actuator/health/readiness"
+            port: 8081
+          initialDelaySeconds: 20 # Allow the app 20s to boot up before checking
+          periodSeconds: 10
+
+        # Liveness Probe: restart the container if it gets stuck in a loop
+        livenessProbe:
+          httpGet:
+            path: "/actuator/health/liveness"
+            port: 8081
+          initialDelaySeconds: 20 # Assume the app is dead after 20s
+          periodSeconds: 20
+
+# Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: leaderboard-service
+spec:
+  selector:
+    app: leaderboard-service
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081

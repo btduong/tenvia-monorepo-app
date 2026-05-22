@@ -21,14 +21,38 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 8080
-        env:
-        - name: QUESTION_SERVICE_URL
-          value: "http://question-service:8083"
-        - name: profile
-          value: "dev"
-        - name: QUESTION_SERVICE_PORT
-          value: "8083"
 
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "dev"
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq"
+        - name: SPRING_RABBITMQ_PORT
+          value: "5672"
+
+        readinessProbe:
+          httpGet:
+            path: "/actuator/health/readiness"
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 10
+
+        livenessProbe:
+          httpGet:
+            path: "/actuator/health/liveness"
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 20
+
+# Service
 ---
 apiVersion: v1
 kind: Service
@@ -39,5 +63,5 @@ spec:
     app: tenvia-app
   ports:
     - protocol: TCP
-      port: 8080 # pods' port ie http://question-service:8083
-      targetPort: 8080 # of the service
+      port: 8080
+      targetPort: 8080
