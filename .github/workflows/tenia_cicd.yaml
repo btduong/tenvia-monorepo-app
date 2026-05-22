@@ -7,7 +7,6 @@ on:
       - 'tenvia-app/**'
       - 'tenvia-common/**'
       - 'leaderboard-service/**'
-      - 'question-service/**'
       - 'pom.xml'
   push:
     branches: ['main']
@@ -15,7 +14,6 @@ on:
       - 'tenvia-app/**'
       - 'tenvia-common/**'
       - 'leaderboard-service/**'
-      - 'question-service/**'
       - 'pom.xml'
 
 permissions:
@@ -39,9 +37,6 @@ jobs:
             - 'tenvia-common/**'
             leaderboard-service:
             - 'leaderboard-service/**'
-            - 'tenvia-common/**'
-            question-service:
-            - 'question-service/**'
             - 'tenvia-common/**'
 
   # Run tests
