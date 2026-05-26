@@ -1,5 +1,6 @@
 package com.tenvia.question.controller;
 
+import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.question.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,21 +23,24 @@ public class QuestionController {
     private QuestionService questionService;
 
     @GetMapping("/random")
-    public ResponseEntity<List<QuestionDTO>> fetchQuestions(@RequestParam int limit) {
+    public ResponseEntity<List<ClientQuestionDTO>> fetchQuestions(@RequestParam int limit) {
         List<QuestionDTO> questionEntities = questionService.fetchRandomQuestion(limit);
-        return ResponseEntity.ok(questionEntities);
+        List<ClientQuestionDTO> clientQuestions = questionEntities.stream()
+                .map(ClientQuestionDTO::from)
+                .toList();
+        return ResponseEntity.ok(clientQuestions);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<QuestionDTO> getQuestion(@PathVariable Long id) {
-        QuestionDTO questionEntities = questionService.getQuestionById(id);
-        return ResponseEntity.ok(questionEntities);
+    public ResponseEntity<ClientQuestionDTO> getQuestion(@PathVariable Long id) {
+        QuestionDTO questionDTO = questionService.getQuestionById(id);
+        return ResponseEntity.ok(ClientQuestionDTO.from(questionDTO));
     }
 
     @PostMapping("/swap")
-    public ResponseEntity<QuestionDTO> swapQuestion(@RequestBody List<Long> excludedIds) {
-        QuestionDTO question = questionService.swapQuestion(excludedIds);
-        return ResponseEntity.ok(question);
+    public ResponseEntity<ClientQuestionDTO> swapQuestion(@RequestBody List<Long> excludedIds) {
+        QuestionDTO questionDTO = questionService.swapQuestion(excludedIds);
+        return ResponseEntity.ok(ClientQuestionDTO.from(questionDTO));
     }
 
 }
