@@ -1,5 +1,6 @@
 package com.tenvia.core.exception;
 
+import com.tenvia.question.exceptions.QuestionNotFoundException;
 import com.tenvia.session.exceptions.FiftyFiftyOptionUsedException;
 import com.tenvia.session.exceptions.GameSessionOverException;
 import com.tenvia.user.exceptions.UserIdNotFoundException;
@@ -10,6 +11,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(QuestionNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleQuestionNotFound(QuestionNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponseDTO.builder()
+                        .errorCode("QUESTION NOT FOUND")
+                        .errorMessage(ex.getMessage())
+                        .build());
+    }
 
     @ExceptionHandler(GameSessionOverException.class)
     public ResponseEntity<ErrorResponseDTO> handleSessionOver(GameSessionOverException ex) {

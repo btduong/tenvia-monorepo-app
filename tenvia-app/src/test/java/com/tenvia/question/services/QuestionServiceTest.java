@@ -3,6 +3,7 @@ package com.tenvia.question.services;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.question.entities.QuestionEntity;
 import com.tenvia.question.entities.QuestionOptionEntity;
+import com.tenvia.question.exceptions.QuestionNotFoundException;
 import com.tenvia.question.repositories.QuestionRepository;
 import com.tenvia.question.service.QuestionMapper;
 import com.tenvia.question.service.QuestionService;
@@ -77,9 +78,9 @@ class QuestionServiceTest {
     }
 
     @Test
-    void fetchQuestionByID_expectException() {
-        Exception runtimeException = assertThrows(RuntimeException.class, () -> questionService.getQuestionById(2L));
-        assertEquals("No question with id",  runtimeException.getMessage());
+    void fetchQuestionById_expectException() {
+        Exception exception = assertThrows(QuestionNotFoundException.class, () -> questionService.getQuestionById(2L));
+        assertEquals("Question with ID 2 was not found",  exception.getMessage());
     }
 
     @Test
