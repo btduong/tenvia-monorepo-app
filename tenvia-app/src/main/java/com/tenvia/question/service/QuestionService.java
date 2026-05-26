@@ -2,6 +2,7 @@ package com.tenvia.question.service;
 
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.question.entities.QuestionEntity;
+import com.tenvia.question.exceptions.QuestionNotFoundException;
 import com.tenvia.question.repositories.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ public class QuestionService {
     }
 
     public QuestionDTO getQuestionById(Long id) {
-        QuestionEntity questionEntity = questionRepository.findById(id).orElseThrow(() -> new RuntimeException("No question with id"));
+        QuestionEntity questionEntity = questionRepository.findById(id).orElseThrow(() -> new QuestionNotFoundException(id));
         return QuestionMapper.from(questionEntity);
     }
 

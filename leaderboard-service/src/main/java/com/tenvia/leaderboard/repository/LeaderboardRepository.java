@@ -10,9 +10,9 @@ import java.util.List;
 public interface LeaderboardRepository extends JpaRepository<LeaderboardScoreEntity, Long> {
 
     /**
-     * Find top 10 highest score in ascending order.
+     * Find top 10 highest score in descending order.
      *
-     * @return a List of  GameSessionEntity
+     * @return a List of LeaderboardScoreEntity
      */
     List<LeaderboardScoreEntity> findTop10ByOrderByScoreDesc();
 }
