@@ -1,5 +1,6 @@
 package com.tenvia.user.controller;
 
+import com.tenvia.user.dto.UserDTO;
 import com.tenvia.user.entities.UserEntity;
 import com.tenvia.user.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,11 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<UserEntity> login(@RequestParam String username) {
+    public ResponseEntity<UserDTO> login(@RequestParam String username) {
         if (username == null || username.isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        return  ResponseEntity.ok(userService.login(username));
+        UserEntity userEntity = userService.login(username);
+        return ResponseEntity.ok(UserDTO.from(userEntity));
     }
 }

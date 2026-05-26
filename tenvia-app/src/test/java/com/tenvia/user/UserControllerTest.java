@@ -1,6 +1,7 @@
 package com.tenvia.user;
 
 
+import com.tenvia.user.dto.UserDTO;
 import com.tenvia.user.entities.UserEntity;
 import com.tenvia.user.services.UserService;
 import org.junit.jupiter.api.Test;
@@ -40,9 +41,9 @@ class UserControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        UserEntity userResponse = objectMapper.readValue(responseData, UserEntity.class);
-        assertThat(userResponse.getUsername()).isEqualTo("alice");
-        assertThat(userResponse.getBalance()).isEqualTo(0);
+        UserDTO userResponse = objectMapper.readValue(responseData, UserDTO.class);
+        assertThat(userResponse.username()).isEqualTo("alice");
+        assertThat(userResponse.balance()).isEqualTo(0);
     }
 
     @Test
