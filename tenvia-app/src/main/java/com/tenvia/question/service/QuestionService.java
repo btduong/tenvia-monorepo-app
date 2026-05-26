@@ -26,7 +26,17 @@ public class QuestionService {
     }
 
     public QuestionDTO swapQuestion(List<Long> excludedIds) {
-        QuestionEntity question = questionRepository.findRandomQuestionExcluding(excludedIds);
+        QuestionEntity question;
+        if (excludedIds == null || excludedIds.isEmpty()) {
+            question = questionRepository.findRandomQuestions(1).stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("No questions available"));
+        } else {
+            question = questionRepository.findRandomQuestionExcluding(excludedIds);
+            if (question == null) {
+                throw new IllegalStateException("No additional questions available to swap");
+            }
+        }
         return QuestionMapper.from(question);
     }
 

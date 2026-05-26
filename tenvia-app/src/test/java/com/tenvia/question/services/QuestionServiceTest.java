@@ -93,5 +93,20 @@ class QuestionServiceTest {
         assertEquals("A", questionDTO.correctLetter());
     }
 
+    @Test
+    void canSwapQuestion_whenExcludedIdsIsEmpty() {
+        when(questionRepository.findRandomQuestions(1)).thenReturn(List.of(questionEntity));
 
+        QuestionDTO questionDTO = questionService.swapQuestion(new ArrayList<>());
+        assertEquals("who are you", questionDTO.questionText());
+    }
+
+    @Test
+    void swapQuestion_expectException_whenNoAdditionalQuestions() {
+        List<Long> excludedIds = List.of(1L, 3L);
+        when(questionRepository.findRandomQuestionExcluding(excludedIds)).thenReturn(null);
+
+        Exception exception = assertThrows(IllegalStateException.class, () -> questionService.swapQuestion(excludedIds));
+        assertEquals("No additional questions available to swap", exception.getMessage());
+    }
 }
