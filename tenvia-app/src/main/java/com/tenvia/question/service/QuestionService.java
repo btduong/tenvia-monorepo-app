@@ -16,7 +16,7 @@ public class QuestionService {
     private QuestionRepository questionRepository;
 
     public List<QuestionDTO> fetchRandomQuestion(int limit) {
-        List<QuestionEntity> randomQuestions = fetchInitialQuestions();
+        List<QuestionEntity> randomQuestions = fetchInitialQuestions(limit);
         return QuestionMapper.from(randomQuestions);
     }
 
@@ -30,8 +30,8 @@ public class QuestionService {
         return QuestionMapper.from(question);
     }
 
-    private List<QuestionEntity> fetchInitialQuestions() {
-        List<QuestionEntity> randomQuestions = questionRepository.findRandomQuestions();
+    private List<QuestionEntity> fetchInitialQuestions(int limit) {
+        List<QuestionEntity> randomQuestions = questionRepository.findRandomQuestions(limit);
         if (randomQuestions.isEmpty()) {
             throw new IllegalStateException("No questions available");
         }

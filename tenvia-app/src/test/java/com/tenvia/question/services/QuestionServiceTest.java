@@ -47,7 +47,7 @@ class QuestionServiceTest {
     @Test
     void canFetchRandomQuestions() {
 
-        when(questionRepository.findRandomQuestions()).thenReturn(List.of(questionEntity));
+        when(questionRepository.findRandomQuestions(1)).thenReturn(List.of(questionEntity));
 
         List<QuestionDTO> questionDTOS = questionService.fetchRandomQuestion(1);
 
@@ -60,7 +60,7 @@ class QuestionServiceTest {
 
     @Test
     void fetchRandomQuestion_expectException_whenResultIsEmpty() {
-        when(questionRepository.findRandomQuestions()).thenReturn(new ArrayList<>());
+        when(questionRepository.findRandomQuestions(5)).thenReturn(new ArrayList<>());
 
         Exception exception = assertThrows(IllegalStateException.class, () -> questionService.fetchRandomQuestion(5));
         assertEquals("No questions available", exception.getMessage());
