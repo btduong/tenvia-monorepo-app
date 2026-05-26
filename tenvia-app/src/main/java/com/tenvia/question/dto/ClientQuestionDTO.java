@@ -30,7 +30,7 @@ public record ClientQuestionDTO(
                 questionDTO.questionText(),
                 questionDTO.options(),
                 questionDTO.powerUpDisabled(),
-                null,
+                questionDTO.expiresInSeconds(),
                 null
         );
     }
