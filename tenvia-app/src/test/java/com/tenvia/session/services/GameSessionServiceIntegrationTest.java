@@ -9,6 +9,7 @@ import com.tenvia.session.entities.GameSessionEntity;
 import com.tenvia.user.entities.UserEntity;
 import com.tenvia.question.service.QuestionService;
 import com.tenvia.user.services.UserService;
+import com.tenvia.user.repositories.UserRepository;
 import com.tenvia.session.repositories.GameSessionRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,17 +27,22 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,9 +72,13 @@ class GameSessionServiceIntegrationTest {
     }
 
     @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
     private GameSessionService gameSessionService;
     @Autowired
     private GameSessionRepository gameSessionRepository;
+    @Autowired
+    private UserRepository userRepository;
     @MockitoBean
     private UserService userService;
     @MockitoBean
@@ -87,6 +97,7 @@ class GameSessionServiceIntegrationTest {
     void setUp() {
 
         userEntity = new UserEntity("username");
+        userRepository.save(userEntity);
 
         session = new GameSessionEntity(userEntity, QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
 
@@ -136,9 +147,9 @@ class GameSessionServiceIntegrationTest {
         int limitInSeconds = sessionConfig.getQuestionTimeLimitInSeconds();
         assertEquals(1, limitInSeconds);
 
-        // Perhaps better to inject a clock into the service then it will all
+        // Perhaps better to inject a clock into the service then dont need to wait.
         await().pollDelay(limitInSeconds + 1, TimeUnit.SECONDS)
-                .atMost(3, TimeUnit.SECONDS)
+                .atMost(limitInSeconds + 2, TimeUnit.SECONDS)
                 .until(() -> true);
 
         // Validate
@@ -153,5 +164,48 @@ class GameSessionServiceIntegrationTest {
                 .andExpect(status().isOk()); // Assert HTTP 200
         GameSessionEntity abandonedSession = gameSessionRepository.findById(session.getId()).get();
         assertTrue(abandonedSession.isOver());
+    }
+
+    @Test
+    void expectNoNewQuestionStart_whenRepeatedlyGetNextQuestion() throws Exception {
+        // Create a custom session for this test with 5s limit
+        GameSessionEntity customSession = new GameSessionEntity(userEntity, QUESTION_IDS, 5);
+        customSession.startSession(60);
+        gameSessionRepository.saveAndFlush(customSession);
+
+        UUID customSessionId = customSession.getId();
+
+        QuestionDTO questionDTO = QuestionDTO.builder()
+                .correctOptionId(1L)
+                .questionText("who are you")
+                .expiresInSeconds(15)
+                .build();
+        when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
+
+        String questionData1 = mockMvc.perform(get("/sessions/{sessionId}/questions/next", customSessionId.toString()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Wait for 1s, at most 2s before sending same request again.
+        await().pollDelay(1, TimeUnit.SECONDS)
+                .atMost(2, TimeUnit.SECONDS)
+                .until(() -> true);
+
+        String questionData2 = mockMvc.perform(get("/sessions/{sessionId}/questions/next", customSessionId.toString()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ClientQuestionDTO clientQuestion2 = objectMapper.readValue(questionData2, ClientQuestionDTO.class);
+        ClientQuestionDTO clientQuestion1 = objectMapper.readValue(questionData1, ClientQuestionDTO.class);
+        assertThat(clientQuestion2.questionText()).isEqualTo("who are you");
+        assertThat(clientQuestion2.questionText()).isEqualTo(clientQuestion1.questionText());
+        assertThat(clientQuestion2.id()).isEqualTo(clientQuestion1.id());
+        assertThat(clientQuestion2.expiresInSecond()).isLessThan(clientQuestion1.expiresInSecond());
+        verify(questionService, times(2)).getQuestionById(anyLong());
+
     }
 }
