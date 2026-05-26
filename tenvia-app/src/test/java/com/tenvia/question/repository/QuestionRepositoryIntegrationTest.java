@@ -25,14 +25,14 @@ class QuestionRepositoryIntegrationTest {
 
     @Test
     void canFindRandomQuestions() {
-        List<QuestionEntity> questionEntityList = questionRepository.findRandomQuestions();
+        List<QuestionEntity> questionEntityList = questionRepository.findRandomQuestions(10);
         assertEquals(10, questionEntityList.size());
 
     }
 
     @Test
     void canFindRandomQuestionExcluding() {
-        List<QuestionEntity> questionEntityList = questionRepository.findRandomQuestions();
+        List<QuestionEntity> questionEntityList = questionRepository.findRandomQuestions(10);
         assertEquals(10, questionEntityList.size());
 
         List<Long> excludedIds = questionEntityList.stream().map(QuestionEntity::getId).toList();
