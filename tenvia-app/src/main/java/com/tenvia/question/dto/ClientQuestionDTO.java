@@ -5,7 +5,7 @@ import com.tenvia.common.dto.QuestionOptionDTO;
 
 import java.util.List;
 
-public record QuestionResponse(
+public record ClientQuestionDTO(
         Long id,
         String questionText,
         List<QuestionOptionDTO> options,
@@ -13,8 +13,8 @@ public record QuestionResponse(
         Integer expiresInSecond,
         Integer index) {
 
-    public static QuestionResponse from(QuestionDTO dto, int index, int expiresIn) {
-        return new QuestionResponse(
+    public static ClientQuestionDTO from(QuestionDTO dto, int index, int expiresIn) {
+        return new ClientQuestionDTO(
                 dto.id(),
                 dto.questionText(),
                 dto.options(),

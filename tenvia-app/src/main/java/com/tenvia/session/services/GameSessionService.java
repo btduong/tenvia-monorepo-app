@@ -4,7 +4,7 @@ import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.config.SessionConfig;
-import com.tenvia.question.dto.QuestionResponse;
+import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.question.service.QuestionService;
 import com.tenvia.session.components.ScoreProducer;
 import com.tenvia.session.dto.AnswerResponseDTO;
@@ -114,7 +114,7 @@ public class GameSessionService {
         return LocalDateTime.now().isAfter(questionStartTime.plusSeconds(session.getQuestionTimeLimitInSeconds()));
     }
 
-    public QuestionResponse getNextQuestion(UUID sessionId) {
+    public ClientQuestionDTO getNextQuestion(UUID sessionId) {
         GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
@@ -135,14 +135,14 @@ public class GameSessionService {
 
         session.startNewQuestion();
 
-        return QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        return ClientQuestionDTO.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
     }
 
     public AppliedEffectResult applySwapQuestionOption(UUID sessionId) {
         GameSessionEntity session = getSessionOrThrow(sessionId);
         QuestionDTO questionDTO = questionService.swapQuestion(session.getQuestionIds());
         session.swapCurrentQuestion(questionDTO.id());
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        ClientQuestionDTO questionResponse = ClientQuestionDTO.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.SWAP_QUESTION, questionResponse);
     }
@@ -171,7 +171,7 @@ public class GameSessionService {
 
         QuestionDTO modifiedQuestion = getModifiedQuestion(questionDTO, IdsToDisable);
 
-        QuestionResponse questionResponse = QuestionResponse.from(modifiedQuestion, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        ClientQuestionDTO questionResponse = ClientQuestionDTO.from(modifiedQuestion, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         // Should probably create a new DTO AppliedEffectQuestion
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.FIFTY_FIFTY, questionResponse);
@@ -200,7 +200,7 @@ public class GameSessionService {
 
         QuestionDTO modifiedQuestion = getModifiedQuestion(questionDTO, optionsIdToDisable);
 
-        QuestionResponse questionResponse = QuestionResponse.from(modifiedQuestion, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        ClientQuestionDTO questionResponse = ClientQuestionDTO.from(modifiedQuestion, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
 
         // Pick the first incorrect option
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.HAMMER, questionResponse);

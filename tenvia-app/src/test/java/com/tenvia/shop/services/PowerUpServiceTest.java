@@ -4,7 +4,7 @@ import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.session.dto.AppliedEffectResult;
 import com.tenvia.shop.PowerUpType;
 import com.tenvia.shop.dto.PowerUpResponseDTO;
-import com.tenvia.question.dto.QuestionResponse;
+import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.user.dto.UserDTO;
 import com.tenvia.session.repositories.GameSessionRepository;
 import com.tenvia.session.services.GameSessionService;
@@ -58,7 +58,7 @@ class PowerUpServiceTest {
                 new QuestionOptionDTO(3L, "Option_3", "C", true),
                 new QuestionOptionDTO(4L, "Option_4", "D", false));
 
-        QuestionResponse questionResponse = new QuestionResponse(1L, "Q1", options, false, 15, 0);
+        ClientQuestionDTO questionResponse = new ClientQuestionDTO(1L, "Q1", options, false, 15, 0);
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult(true, PowerUpType.HAMMER, questionResponse);
         when(gameSessionService.applyHammerOption(sessionId)).thenReturn(appliedEffectResult);
         when(userService.useItem(userId, PowerUpType.HAMMER)).thenReturn(userDTO);
@@ -78,7 +78,7 @@ class PowerUpServiceTest {
                 new QuestionOptionDTO(3L, "Option_3", "C", true),
                 new QuestionOptionDTO(4L, "Option_4", "D", false));
 
-        QuestionResponse questionResponse = new QuestionResponse(1L, "Q1", options, false, 15, 0);
+        ClientQuestionDTO questionResponse = new ClientQuestionDTO(1L, "Q1", options, false, 15, 0);
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult( true, PowerUpType.FIFTY_FIFTY, questionResponse);
         when(gameSessionService.applyFiftyFiftyOption(sessionId)).thenReturn(appliedEffectResult);
         when(userService.useItem(userId, PowerUpType.FIFTY_FIFTY)).thenReturn(userDTO);

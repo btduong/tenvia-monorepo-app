@@ -1,6 +1,6 @@
 package com.tenvia.session.dto;
 
-import com.tenvia.question.dto.QuestionResponse;
+import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.shop.PowerUpType;
 
 /***
@@ -9,5 +9,5 @@ import com.tenvia.shop.PowerUpType;
 public record AppliedEffectResult(
         boolean canUsePowerUps,
         PowerUpType appliedPowerUp,
-        QuestionResponse questionResponse) {
+        ClientQuestionDTO questionResponse) {
 }

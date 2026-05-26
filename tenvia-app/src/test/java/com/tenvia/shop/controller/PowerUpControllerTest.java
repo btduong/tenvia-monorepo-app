@@ -4,7 +4,7 @@ import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.session.dto.AppliedEffectResult;
 import com.tenvia.shop.PowerUpType;
 import com.tenvia.shop.dto.PowerUpResponseDTO;
-import com.tenvia.question.dto.QuestionResponse;
+import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.user.dto.UserDTO;
 import com.tenvia.shop.services.PowerUpService;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ class PowerUpControllerTest {
         LocalDateTime createdAt = LocalDateTime.now();
         UserDTO userDTO = new UserDTO(1L, "alice", createdAt, 0, new HashMap<>());
         QuestionDTO questionDTO = new QuestionDTO(1L, "who are you", new ArrayList<>(), false, "A", "xplained", 1L, 15);
-        QuestionResponse questionResponse = QuestionResponse.from(questionDTO, 0, 15);
+        ClientQuestionDTO questionResponse = ClientQuestionDTO.from(questionDTO, 0, 15);
         AppliedEffectResult effectResult = new AppliedEffectResult(true, powerToUse, questionResponse);
         PowerUpResponseDTO response = new PowerUpResponseDTO(userDTO, effectResult);
 
