@@ -39,8 +39,7 @@ public class QuestionEntity {
     /**
      * The explanation for the correct answer.
      */
-    @Column(columnDefinition = "NVARCHAR(MAX)") // for SQL Server/H2
-    // @Column(columnDefinition = "TEXT") // for unlimited text
+    @Column(length = 2000)
     private String explanation;
 
     protected QuestionEntity() {}
