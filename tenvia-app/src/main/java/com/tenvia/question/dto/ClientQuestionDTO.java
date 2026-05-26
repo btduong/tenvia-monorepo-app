@@ -13,14 +13,25 @@ public record ClientQuestionDTO(
         Integer expiresInSecond,
         Integer index) {
 
-    public static ClientQuestionDTO from(QuestionDTO dto, int index, int expiresIn) {
+    public static ClientQuestionDTO from(QuestionDTO questionDTO, int index, int expiresIn) {
         return new ClientQuestionDTO(
-                dto.id(),
-                dto.questionText(),
-                dto.options(),
-                dto.powerUpDisabled(),
+                questionDTO.id(),
+                questionDTO.questionText(),
+                questionDTO.options(),
+                questionDTO.powerUpDisabled(),
                 expiresIn,
                 index
+        );
+    }
+
+    public static ClientQuestionDTO from(QuestionDTO questionDTO) {
+        return new ClientQuestionDTO(
+                questionDTO.id(),
+                questionDTO.questionText(),
+                questionDTO.options(),
+                questionDTO.powerUpDisabled(),
+                questionDTO.expiresInSeconds(),
+                null
         );
     }
 }
