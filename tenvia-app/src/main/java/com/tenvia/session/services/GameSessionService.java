@@ -133,9 +133,16 @@ public class GameSessionService {
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
         QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
 
-        session.startNewQuestion();
+        int expiresInSeconds;
+        if (session.getQuestionStartTime() == null) {
+            session.startNewQuestion();
+            expiresInSeconds = session.getQuestionTimeLimitInSeconds();
+        } else {
+            long elapsed = Duration.between(session.getQuestionStartTime(), LocalDateTime.now()).getSeconds();
+            expiresInSeconds = (int) Math.max(session.getQuestionTimeLimitInSeconds() - elapsed, 0);
+        }
 
-        return ClientQuestionDTO.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
+        return ClientQuestionDTO.from(questionDTO, session.getCurrentQuestionIndex(), expiresInSeconds);
     }
 
     public AppliedEffectResult applySwapQuestionOption(UUID sessionId) {
