@@ -1,6 +1,6 @@
 package com.tenvia.session.controller;
 
-import com.tenvia.question.dto.QuestionResponse;
+import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.session.dto.AnswerRequestDTO;
 import com.tenvia.session.dto.AnswerResponseDTO;
 import com.tenvia.session.dto.GameSessionDTO;
@@ -38,7 +38,7 @@ public class GameSessionController {
     }
 
     @GetMapping("/{sessionId}/questions/next")
-    public QuestionResponse getNextQuestion(@PathVariable UUID sessionId) {
+    public ClientQuestionDTO getNextQuestion(@PathVariable UUID sessionId) {
         return gameSessionService.getNextQuestion(sessionId);
     }
 

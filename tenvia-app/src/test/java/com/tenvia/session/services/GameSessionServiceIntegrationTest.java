@@ -4,7 +4,7 @@ import com.tenvia.TenviaApplication;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.session.dto.AnswerResponseDTO;
-import com.tenvia.question.dto.QuestionResponse;
+import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.session.entities.GameSessionEntity;
 import com.tenvia.user.entities.UserEntity;
 import com.tenvia.question.service.QuestionService;
@@ -125,7 +125,7 @@ class GameSessionServiceIntegrationTest {
     void expectSkipValidation_whenQuestionTimedOut() {
         QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
-        QuestionResponse nextQuestion = gameSessionService.getNextQuestion(activeSessionId);
+        ClientQuestionDTO nextQuestion = gameSessionService.getNextQuestion(activeSessionId);
         assertEquals(0, nextQuestion.index());
 
         GameSessionEntity updatedSession = gameSessionRepository.findById(activeSessionId).get();
