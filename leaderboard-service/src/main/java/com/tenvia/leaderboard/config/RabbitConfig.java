@@ -28,12 +28,12 @@ public class RabbitConfig {
 
     @Bean
     public Queue scoringQueue() {
-        return new Queue("scoring.queue");
+        return new Queue(rabbitCommonConfig.getQueue());
     }
 
     @Bean
     public Binding binding(Queue scoringQueue, TopicExchange gameExchange) {
-        return  BindingBuilder.bind(scoringQueue).to(gameExchange).with("score.submitted");
+        return  BindingBuilder.bind(scoringQueue).to(gameExchange).with(rabbitCommonConfig.getRoutingKey());
     }
 
     @Bean

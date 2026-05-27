@@ -1,6 +1,8 @@
 package com.tenvia.session.components;
 
+import com.tenvia.common.config.RabbitCommonConfig;
 import com.tenvia.common.event.ScoreSubmittedEvent;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,14 +14,23 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ScoreProducerTest {
 
     @Mock
     private RabbitTemplate rabbitTemplate;
+    @Mock
+    private RabbitCommonConfig rabbitConfig;
     @InjectMocks
     private ScoreProducer scoreProducer;
+
+    @BeforeEach
+    public void setUp() {
+        when(rabbitConfig.getExchange()).thenReturn("game.exchange");
+        when(rabbitConfig.getRoutingKey()).thenReturn("score.submitted");
+    }
 
     @Test
     void canSendUpdateSuccessfully() {

@@ -80,7 +80,7 @@ class QuestionServiceTest {
     @Test
     void fetchQuestionById_expectException() {
         Exception exception = assertThrows(QuestionNotFoundException.class, () -> questionService.getQuestionById(2L));
-        assertEquals("Question with ID 2 was not found",  exception.getMessage());
+        assertEquals("Question with Id: 2 was not found",  exception.getMessage());
     }
 
     @Test
