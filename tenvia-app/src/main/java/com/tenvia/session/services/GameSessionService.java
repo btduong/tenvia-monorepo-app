@@ -13,6 +13,7 @@ import com.tenvia.session.dto.GameSessionDTO;
 import com.tenvia.session.dto.GameSessionSummary;
 import com.tenvia.session.entities.GameSessionEntity;
 import com.tenvia.session.exceptions.GameSessionOverException;
+import com.tenvia.session.exceptions.InvalidSessionOwnerException;
 import com.tenvia.session.exceptions.SessionNotFoundException;
 import com.tenvia.session.repositories.GameSessionRepository;
 import com.tenvia.shop.PowerUpType;
@@ -211,6 +212,19 @@ public class GameSessionService {
 
         // Pick the first incorrect option
         return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.HAMMER, questionResponse);
+    }
+
+    /**
+     * Verify whether a given userId owns the current session.
+     * Throws {@link InvalidSessionOwnerException} if the session's userId does not match the given userId.
+     * @param sessionID - the session Id
+     * @param userId - the user Id that owns the current session
+     */
+    public void verifySessionIdOwner(UUID sessionID, Long userId) {
+        GameSessionEntity gameSessionEntity = getSessionOrThrow(sessionID);
+        if (gameSessionEntity.getUser()== null || !gameSessionEntity.getUser().getId().equals(userId)) {
+            throw new InvalidSessionOwnerException(sessionID, userId);
+        }
     }
 
     private static @NonNull QuestionDTO getModifiedQuestion(QuestionDTO questionDTO, List<Long> incorrectOptionIds) {

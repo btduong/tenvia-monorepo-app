@@ -2,6 +2,7 @@ package com.tenvia.shop.services;
 
 import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.session.dto.AppliedEffectResult;
+import com.tenvia.session.exceptions.InvalidSessionOwnerException;
 import com.tenvia.shop.PowerUpType;
 import com.tenvia.shop.dto.PowerUpResponseDTO;
 import com.tenvia.question.dto.ClientQuestionDTO;
@@ -24,7 +25,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -96,5 +100,16 @@ class PowerUpServiceTest {
         assertThat(unavailableQuestionOptions.get(0).id()).isEqualTo(1L);
         assertThat(unavailableQuestionOptions.get(1).id()).isEqualTo(4L);
 
+    }
+
+    @Test
+    void applyPowerUp_expectException_whenUserDoesNotOwnSession() {
+        doThrow(new InvalidSessionOwnerException(sessionId, userId)).when(gameSessionService).verifySessionIdOwner(sessionId, userId);
+
+        assertThrows(InvalidSessionOwnerException.class, () -> {
+           powerUpService.applyPowerUp(userId, sessionId, PowerUpType.HAMMER);
+        });
+
+        verifyNoInteractions(userService);
     }
 }

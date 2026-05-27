@@ -3,6 +3,7 @@ package com.tenvia.core.exception;
 import com.tenvia.question.exceptions.QuestionNotFoundException;
 import com.tenvia.session.exceptions.FiftyFiftyOptionUsedException;
 import com.tenvia.session.exceptions.GameSessionOverException;
+import com.tenvia.session.exceptions.InvalidSessionOwnerException;
 import com.tenvia.user.exceptions.UserIdNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +45,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponseDTO.builder()
                         .errorCode("userId does not exist")
+                        .errorMessage(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(InvalidSessionOwnerException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidSessionOwner(InvalidSessionOwnerException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponseDTO.builder()
+                        .errorCode("FORBIDDEN")
                         .errorMessage(ex.getMessage())
                         .build());
     }
