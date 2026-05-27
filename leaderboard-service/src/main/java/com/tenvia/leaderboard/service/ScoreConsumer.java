@@ -11,7 +11,7 @@ public class ScoreConsumer {
     @Autowired
     private LeaderboardService leaderboardService;
 
-    @RabbitListener(queues =  "scoring.queue")
+    @RabbitListener(queues =  "${tenvia.rabbit.queue:scoring.queue}")
     public void handleScoreSubmission(ScoreSubmittedEvent event) {
         leaderboardService.saveScore(event);
     }

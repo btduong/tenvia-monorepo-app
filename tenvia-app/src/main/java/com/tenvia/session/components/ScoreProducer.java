@@ -1,5 +1,6 @@
 package com.tenvia.session.components;
 
+import com.tenvia.common.config.RabbitCommonConfig;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
@@ -13,10 +14,12 @@ public class ScoreProducer {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private RabbitCommonConfig rabbitConfig;
 
     public void sendUpdate(ScoreSubmittedEvent event) {
         try {
-            rabbitTemplate.convertAndSend("game.exchange", "score.submitted", event);
+            rabbitTemplate.convertAndSend(rabbitConfig.getExchange(), rabbitConfig.getRoutingKey(), event);
         } catch(AmqpException ex) {
             // TODO: add a metric to track this failure event.
             log.error("Fail to send score update");
