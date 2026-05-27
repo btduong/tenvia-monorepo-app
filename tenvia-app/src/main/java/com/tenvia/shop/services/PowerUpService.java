@@ -21,6 +21,8 @@ public class PowerUpService {
 
     @Transactional
     public PowerUpResponseDTO applyPowerUp(Long userId, UUID sessionId, PowerUpType type) {
+        // Verify the request to use the item is not from another user.
+        gameSessionService.verifySessionIdOwner(sessionId, userId);
         UserDTO userDTO = userService.useItem(userId, type);
 
         AppliedEffectResult effectData = switch (type) {

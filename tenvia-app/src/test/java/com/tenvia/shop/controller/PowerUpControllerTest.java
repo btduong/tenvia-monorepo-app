@@ -2,6 +2,7 @@ package com.tenvia.shop.controller;
 
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.session.dto.AppliedEffectResult;
+import com.tenvia.session.exceptions.InvalidSessionOwnerException;
 import com.tenvia.shop.PowerUpType;
 import com.tenvia.shop.dto.PowerUpResponseDTO;
 import com.tenvia.question.dto.ClientQuestionDTO;
@@ -78,6 +79,18 @@ class PowerUpControllerTest {
                         .param("userId", userId.toString())
                         .param("sessionId", sessionId.toString()))
                 .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void expect403_whenUserDoesNotOwnTheSession() throws Exception {
+        PowerUpType powerUpToUse = PowerUpType.HAMMER;
+        when(powerUpService.applyPowerUp(userId, sessionId, powerUpToUse)).thenThrow(new InvalidSessionOwnerException(sessionId, userId));
+
+        mockMvc.perform(post("/api/powerups/use")
+                        .param("type", powerUpToUse.toString())
+                        .param("userId", userId.toString())
+                        .param("sessionId", sessionId.toString()))
+                .andExpect(status().isForbidden());
     }
 
 }
