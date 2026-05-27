@@ -1,37 +1,33 @@
-A simple quiz game in format of multiple choice questions and answer.
+# Tenvia - Leaderboard Service
 
-General steps for local dev:
-- build docker image
-- load to minikube
-- apply the deployment
-- do port-forwarding to expose the service to the host machine
+This microservice keeps track of the top scores for `tenvia-app`. 
 
-# Some basic Kubernetes concepts:
-## Deployments
-- Deployments are the recommended way to manage the creation and scaling of Pods.
-## Services
-- By default, the Pod is only accessible by its internal IP address within the Kubernetes cluster. To make the hello-node Container accessible from outside the Kubernetes virtual network, you have to expose the Pod as a Kubernetes Service.
+## Overview
+- **RabbitMQ** - listens to a RabbitMQ queue for score update events which are sent by `tenvia-app` when a game session is finished
+- **Storage** - high score data is currently stored in an in-memory H2 database (in development)
 
-## To build the docker image, at the root app, run:
-`docker build -t tenvia:latest .`
+## Configuration
+The service configs for RabbitMQ and H2 are stored in `application.properties`.
 
-## To deploy to minikube cluster:
-* Upload the build image to minikube
-  * `minikube load image tenvia`
-* Start the minikube cluster
-  * `minikube start`
-* Port forwarding to expose the service
-  * `kubectl port-forward service/my-spring-app-service 8080:8080`
+## Endpoints
 
-## To update image in Minikube
-Option 1 - if the image tag is changed ie v1 -> v2
+| Method | Name           | Description                 |
+|--------|----------------|-----------------------------|
+| `GET`  | `/leaderboard` | Retrieves the top 25 scores |
 
-`kubectl set image deploymnet/tenvia tenvia-container=tenvia:v2`
+## Running
 
-Option 2 - reused the tag 'latest' - then a force restart is need. Because Kubernetes can't see the change in the yaml so it won't restart the pods.
+**Required:** Docker
 
-`kubectl rollout restart deployment/tenvia`
+This service depends on RabbitMQ and the shared `tenvia-common` module so it is recommended to run the build script provided.
 
-## View log:
+It will build all the modules and bring up the services locally (using docker compose)
+```bash
+# Run from project root directory
+./build-local.sh
+```
 
-`kubectl logs -f deployment/tenvia`
+To stop, run:
+```
+docker compose down
+```
