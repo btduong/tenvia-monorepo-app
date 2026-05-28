@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * </p>
  */
 @Component
-public class HammerStrategy extends AbstractPowerUpStrategy {
+public final class HammerStrategy extends AbstractPowerUpStrategy {
 
     public HammerStrategy(GameSessionRepository gameSessionRepository, QuestionService questionService, SessionConfig sessionConfig) {
         super(gameSessionRepository, questionService, sessionConfig);

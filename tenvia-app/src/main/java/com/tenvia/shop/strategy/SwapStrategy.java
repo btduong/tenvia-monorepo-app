@@ -21,7 +21,7 @@ import java.util.UUID;
  * </p>
  */
 @Component
-public class SwapStrategy extends  AbstractPowerUpStrategy {
+public final class SwapStrategy extends  AbstractPowerUpStrategy {
 
     public SwapStrategy(GameSessionRepository gameSessionRepository, QuestionService questionService, SessionConfig sessionConfig) {
         super(gameSessionRepository, questionService, sessionConfig);
