@@ -1,19 +1,21 @@
 package com.tenvia.shop.services;
 
 import com.tenvia.common.dto.QuestionOptionDTO;
+import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.session.dto.AppliedEffectResult;
 import com.tenvia.session.exceptions.InvalidSessionOwnerException;
-import com.tenvia.shop.PowerUpType;
-import com.tenvia.shop.dto.PowerUpResponseDTO;
-import com.tenvia.question.dto.ClientQuestionDTO;
-import com.tenvia.user.dto.UserDTO;
 import com.tenvia.session.repositories.GameSessionRepository;
 import com.tenvia.session.services.GameSessionService;
+import com.tenvia.shop.PowerUpType;
+import com.tenvia.shop.dto.PowerUpResponseDTO;
+import com.tenvia.shop.strategy.FiftyFiftyStrategy;
+import com.tenvia.shop.strategy.HammerStrategy;
+import com.tenvia.shop.strategy.SwapStrategy;
+import com.tenvia.user.dto.UserDTO;
 import com.tenvia.user.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -40,7 +42,13 @@ class PowerUpServiceTest {
     private UserService userService;
     @Mock
     private GameSessionRepository gameSessionRepository;
-    @InjectMocks
+    @Mock
+    private FiftyFiftyStrategy fiftyFiftyStrategy;
+    @Mock
+    private HammerStrategy hammerStrategy;
+    @Mock
+    private SwapStrategy swapStrategy;
+
     private PowerUpService powerUpService;
 
     private Long userId;
@@ -50,6 +58,11 @@ class PowerUpServiceTest {
 
     @BeforeEach
     public void setUp() {
+        when(hammerStrategy.getPowerUpType()).thenReturn(PowerUpType.HAMMER);
+        when(swapStrategy.getPowerUpType()).thenReturn(PowerUpType.SWAP_QUESTION);
+        when(fiftyFiftyStrategy.getPowerUpType()).thenReturn(PowerUpType.FIFTY_FIFTY);
+
+        powerUpService = new PowerUpService(gameSessionService, userService, List.of(hammerStrategy, swapStrategy, fiftyFiftyStrategy));
         userId = 1L;
         sessionId = UUID.randomUUID();
         userDTO = new UserDTO(1L, "Bob", LocalDateTime.now(), 0, new HashMap<>());
@@ -64,8 +77,8 @@ class PowerUpServiceTest {
 
         ClientQuestionDTO questionResponse = new ClientQuestionDTO(1L, "Q1", options, false, 15, 0);
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult(true, PowerUpType.HAMMER, questionResponse);
-        when(gameSessionService.applyHammerOption(sessionId)).thenReturn(appliedEffectResult);
         when(userService.useItem(userId, PowerUpType.HAMMER)).thenReturn(userDTO);
+        when(hammerStrategy.apply(sessionId)).thenReturn(appliedEffectResult);
 
         PowerUpResponseDTO result = powerUpService.applyPowerUp(userId, sessionId, PowerUpType.HAMMER);
         assertEquals("Bob", result.updatedUser().username());
@@ -84,8 +97,8 @@ class PowerUpServiceTest {
 
         ClientQuestionDTO questionResponse = new ClientQuestionDTO(1L, "Q1", options, false, 15, 0);
         AppliedEffectResult appliedEffectResult = new AppliedEffectResult( true, PowerUpType.FIFTY_FIFTY, questionResponse);
-        when(gameSessionService.applyFiftyFiftyOption(sessionId)).thenReturn(appliedEffectResult);
         when(userService.useItem(userId, PowerUpType.FIFTY_FIFTY)).thenReturn(userDTO);
+        when(fiftyFiftyStrategy.apply(sessionId)).thenReturn(appliedEffectResult);
 
         PowerUpResponseDTO result = powerUpService.applyPowerUp(userId, sessionId, PowerUpType.FIFTY_FIFTY);
 

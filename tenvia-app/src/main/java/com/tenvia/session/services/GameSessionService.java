@@ -1,14 +1,12 @@
 package com.tenvia.session.services;
 
 import com.tenvia.common.dto.QuestionDTO;
-import com.tenvia.common.dto.QuestionOptionDTO;
 import com.tenvia.common.event.ScoreSubmittedEvent;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.question.service.QuestionService;
 import com.tenvia.session.components.ScoreProducer;
 import com.tenvia.session.dto.AnswerResponseDTO;
-import com.tenvia.session.dto.AppliedEffectResult;
 import com.tenvia.session.dto.GameSessionDTO;
 import com.tenvia.session.dto.GameSessionSummary;
 import com.tenvia.session.entities.GameSessionEntity;
@@ -16,21 +14,17 @@ import com.tenvia.session.exceptions.GameSessionOverException;
 import com.tenvia.session.exceptions.InvalidSessionOwnerException;
 import com.tenvia.session.exceptions.SessionNotFoundException;
 import com.tenvia.session.repositories.GameSessionRepository;
-import com.tenvia.shop.PowerUpType;
 import com.tenvia.user.entities.UserEntity;
 import com.tenvia.user.services.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -138,74 +132,6 @@ public class GameSessionService {
         return ClientQuestionDTO.from(questionDTO, session.getCurrentQuestionIndex(), expiresInSeconds);
     }
 
-    public AppliedEffectResult applySwapQuestionOption(UUID sessionId) {
-        GameSessionEntity session = getSessionOrThrow(sessionId);
-        QuestionDTO questionDTO = questionService.swapQuestion(session.getQuestionIds());
-        session.swapCurrentQuestion(questionDTO.id());
-        ClientQuestionDTO questionResponse = ClientQuestionDTO.from(questionDTO, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
-
-        return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.SWAP_QUESTION, questionResponse);
-    }
-
-    public AppliedEffectResult applyFiftyFiftyOption(UUID sessionId) {
-        GameSessionEntity session = getSessionOrThrow(sessionId);
-        if (session.isOver()) {
-            throw new GameSessionOverException(sessionId);
-        }
-
-        session.addActivatedPowerUp(PowerUpType.FIFTY_FIFTY);
-
-        Long currentQuestionId = session.getCurrentQuestionId();
-
-        QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
-        Long correctOptionId = questionDTO.correctOptionId();
-
-        List<Long> incorrectOptionIds = questionDTO.options().stream()
-                .map(QuestionOptionDTO::id)
-                .filter(id -> !id.equals(correctOptionId))
-                .collect(Collectors.toList());
-        Collections.shuffle(incorrectOptionIds);
-
-        // Randomly pick half of the options to make them unavailable for selecting
-        List<Long> IdsToDisable = incorrectOptionIds.subList(0, incorrectOptionIds.size() / 2 + 1);
-
-        QuestionDTO modifiedQuestion = getModifiedQuestion(questionDTO, IdsToDisable);
-
-        ClientQuestionDTO questionResponse = ClientQuestionDTO.from(modifiedQuestion, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
-
-        // Should probably create a new DTO AppliedEffectQuestion
-        return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.FIFTY_FIFTY, questionResponse);
-    }
-
-    public AppliedEffectResult applyHammerOption(UUID sessionId) {
-        GameSessionEntity session = getSessionOrThrow(sessionId);
-        if (session.isOver()) {
-            throw new GameSessionOverException(sessionId);
-        }
-
-        session.addActivatedPowerUp(PowerUpType.HAMMER);
-
-        Long currentQuestionId = session.getCurrentQuestionId();
-        QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
-
-        Long correctOptionId = questionDTO.correctOptionId();
-        List<Long> incorrectOptionIds = questionDTO.options().stream()
-                .map(QuestionOptionDTO::id)
-                .filter(id -> !id.equals(correctOptionId))
-                .collect(Collectors.toList());
-        Collections.shuffle(incorrectOptionIds);
-
-        // Make on option unavailable
-        List<Long> optionsIdToDisable = incorrectOptionIds.subList(0, 1);
-
-        QuestionDTO modifiedQuestion = getModifiedQuestion(questionDTO, optionsIdToDisable);
-
-        ClientQuestionDTO questionResponse = ClientQuestionDTO.from(modifiedQuestion, session.getCurrentQuestionIndex(), sessionConfig.getQuestionTimeLimitInSeconds());
-
-        // Pick the first incorrect option
-        return new AppliedEffectResult(!session.hasReachedPowerUpLimit(), PowerUpType.HAMMER, questionResponse);
-    }
-
     /**
      * Verify whether a given userId owns the current session.
      * Throws {@link InvalidSessionOwnerException} if the session's userId does not match the given userId.
@@ -217,27 +143,6 @@ public class GameSessionService {
         if (gameSessionEntity.getUser()== null || !gameSessionEntity.getUser().getId().equals(userId)) {
             throw new InvalidSessionOwnerException(sessionID, userId);
         }
-    }
-
-    private static @NonNull QuestionDTO getModifiedQuestion(QuestionDTO questionDTO, List<Long> incorrectOptionIds) {
-        List<QuestionOptionDTO> modifiedOptions = questionDTO.options().stream()
-                .map(opt -> {
-                    if (incorrectOptionIds.contains(opt.id())) {
-                        return new QuestionOptionDTO(opt.id(), opt.content(), opt.letter(), false);
-                    }
-                    return opt;
-                }).toList();
-
-        return new QuestionDTO(
-                questionDTO.id(),
-                questionDTO.questionText(),
-                modifiedOptions,
-                questionDTO.powerUpDisabled(),
-                questionDTO.correctLetter(),
-                questionDTO.explanation(),
-                questionDTO.correctOptionId(),
-                questionDTO.expiresInSeconds()
-        );
     }
 
     private void finishSession(GameSessionEntity session) {

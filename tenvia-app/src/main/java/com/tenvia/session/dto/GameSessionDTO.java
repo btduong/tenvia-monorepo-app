@@ -1,7 +1,7 @@
 package com.tenvia.session.dto;
 
-import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.common.dto.QuestionDTO;
+import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.session.entities.GameSessionEntity;
 import com.tenvia.user.dto.UserDTO;
 import com.tenvia.user.entities.UserEntity;

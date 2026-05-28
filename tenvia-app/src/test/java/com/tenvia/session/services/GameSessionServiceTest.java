@@ -1,18 +1,16 @@
 package com.tenvia.session.services;
 
-import com.tenvia.shop.PowerUpType;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.common.dto.QuestionOptionDTO;
-import com.tenvia.session.components.ScoreProducer;
 import com.tenvia.config.SessionConfig;
+import com.tenvia.question.service.QuestionService;
+import com.tenvia.session.components.ScoreProducer;
 import com.tenvia.session.dto.AnswerResponseDTO;
-import com.tenvia.session.dto.AppliedEffectResult;
 import com.tenvia.session.dto.GameSessionDTO;
 import com.tenvia.session.entities.GameSessionEntity;
-import com.tenvia.user.entities.UserEntity;
-import com.tenvia.question.service.QuestionService;
-import com.tenvia.user.services.UserService;
 import com.tenvia.session.repositories.GameSessionRepository;
+import com.tenvia.user.entities.UserEntity;
+import com.tenvia.user.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -124,44 +122,6 @@ class GameSessionServiceTest {
         assertEquals(1, session.getCurrentQuestionIndex());
         assertTrue(result.isCorrect());
 
-    }
-
-    @Test
-    void applyFiftyFiftyOption_expectTwoIds() {
-        when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-        when(questionService.getQuestionById(1L)).thenReturn(questionDTO);
-
-        AppliedEffectResult result = gameSessionService.applyFiftyFiftyOption(sessionId);
-
-        List<QuestionOptionDTO> unavailableOptions = result.questionResponse().options().stream().filter(opt -> !opt.isAvailable()).toList();
-        assertEquals(2, unavailableOptions.size());
-    }
-
-    @Test
-    void applyHammerOption_expectOneId() {
-        when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-        when(questionService.getQuestionById(1L)).thenReturn(questionDTO);
-
-        AppliedEffectResult result = gameSessionService.applyHammerOption(sessionId);
-
-        List<QuestionOptionDTO> unavailableOptions = result.questionResponse().options().stream().filter(opt -> !opt.isAvailable()).toList();
-        assertEquals(1, unavailableOptions.size());
-    }
-
-    @Test
-    void applyFiftyFiftyOption_expectException_whenMaxUsageReached() {
-        when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-
-        session.getActivePowerUps().add(PowerUpType.FIFTY_FIFTY);
-        assertThrows(IllegalStateException.class, () -> gameSessionService.applyFiftyFiftyOption(sessionId));
-    }
-
-    @Test
-    void applyHammer_expectException_whenMaxUsageReached() {
-        when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
-
-        session.getActivePowerUps().add(PowerUpType.HAMMER);
-        assertThrows(IllegalStateException.class, () -> gameSessionService.applyHammerOption(sessionId));
     }
 
     @Test
