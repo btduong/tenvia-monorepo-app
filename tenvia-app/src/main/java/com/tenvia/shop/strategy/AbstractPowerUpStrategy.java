@@ -17,7 +17,7 @@ import java.util.UUID;
  * Abstract base class for power-up strategies.
  */
 @RequiredArgsConstructor
-public abstract class AbstractPowerUpStrategy implements PowerUpStrategy {
+public abstract sealed class AbstractPowerUpStrategy implements PowerUpStrategy permits FiftyFiftyStrategy, HammerStrategy, SwapStrategy {
 
     protected final GameSessionRepository gameSessionRepository;
     protected final QuestionService questionService;

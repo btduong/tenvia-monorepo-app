@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * Defines the strategy for applying a specific power-up in a game session.
  */
-public interface PowerUpStrategy {
+public sealed interface PowerUpStrategy permits AbstractPowerUpStrategy {
 
     /**
      * Applies the power-up effect to the specified game session.

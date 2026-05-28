@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * </p>
  */
 @Component
-public class FiftyFiftyStrategy extends AbstractPowerUpStrategy {
+public final class FiftyFiftyStrategy extends AbstractPowerUpStrategy {
 
 
     public FiftyFiftyStrategy(GameSessionRepository gameSessionRepository, QuestionService questionService, SessionConfig sessionConfig) {
