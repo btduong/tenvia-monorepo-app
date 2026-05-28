@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 
@@ -48,7 +49,8 @@ class QuestionServiceTest {
     @Test
     void canFetchRandomQuestions() {
 
-        when(questionRepository.findRandomQuestions(1)).thenReturn(List.of(questionEntity));
+        when(questionRepository.findAllIds()).thenReturn(List.of(1L));
+        when(questionRepository.findAllById(anyList())).thenReturn(List.of(questionEntity));
 
         List<QuestionDTO> questionDTOS = questionService.fetchRandomQuestion(1);
 
@@ -61,7 +63,7 @@ class QuestionServiceTest {
 
     @Test
     void fetchRandomQuestion_expectException_whenResultIsEmpty() {
-        when(questionRepository.findRandomQuestions(5)).thenReturn(new ArrayList<>());
+        when(questionRepository.findAllIds()).thenReturn(new ArrayList<>());
 
         Exception exception = assertThrows(IllegalStateException.class, () -> questionService.fetchRandomQuestion(5));
         assertEquals("No questions available", exception.getMessage());
@@ -86,7 +88,8 @@ class QuestionServiceTest {
     @Test
     void canSwapQuestion() {
         List<Long> excludedIds = List.of(1L, 3L);
-        when(questionRepository.findRandomQuestionExcluding(excludedIds)).thenReturn(questionEntity);
+        when(questionRepository.findIdsExcluding(excludedIds)).thenReturn(List.of(2L));
+        when(questionRepository.findById(2L)).thenReturn(Optional.of(questionEntity));
 
         QuestionDTO questionDTO = questionService.swapQuestion(excludedIds);
         assertEquals("who are you", questionDTO.questionText());
@@ -96,7 +99,8 @@ class QuestionServiceTest {
 
     @Test
     void canSwapQuestion_whenExcludedIdsIsEmpty() {
-        when(questionRepository.findRandomQuestions(1)).thenReturn(List.of(questionEntity));
+        when(questionRepository.findAllIds()).thenReturn(List.of(2L));
+        when(questionRepository.findById(2L)).thenReturn(Optional.of(questionEntity));
 
         QuestionDTO questionDTO = questionService.swapQuestion(new ArrayList<>());
         assertEquals("who are you", questionDTO.questionText());
@@ -105,7 +109,7 @@ class QuestionServiceTest {
     @Test
     void swapQuestion_expectException_whenNoAdditionalQuestions() {
         List<Long> excludedIds = List.of(1L, 3L);
-        when(questionRepository.findRandomQuestionExcluding(excludedIds)).thenReturn(null);
+        when(questionRepository.findIdsExcluding(excludedIds)).thenReturn(new ArrayList<>());
 
         Exception exception = assertThrows(IllegalStateException.class, () -> questionService.swapQuestion(excludedIds));
         assertEquals("No additional questions available to swap", exception.getMessage());
