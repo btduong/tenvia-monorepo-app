@@ -11,10 +11,19 @@ import java.util.List;
 @Repository
 public interface QuestionRepository extends JpaRepository<QuestionEntity, Long> {
 
-    @Query(value = "SELECT * FROM questions ORDER BY RAND() LIMIT :limit", nativeQuery = true)
-    List<QuestionEntity> findRandomQuestions(@Param("limit") int limit);
+    /**
+     * Retrieve all questions ids using the primary key as they are indexed.
+     * @return a list of question ids
+     */
+    @Query("SELECT q.id FROM QuestionEntity q")
+    List<Long> findAllIds();
 
-    @Query(value = "SELECT * from questions where id NOT IN :excludedIds ORDER BY RAND() LIMIT 1", nativeQuery = true)
-    QuestionEntity findRandomQuestionExcluding(@Param("excludedIds") List<Long> excludedIds);
+    /**
+     * Retrieve all question ids excluding ids in the list of excluded ids.
+     * @param excludedIds a list of excluded ids
+     * @return a list of question ids not in the excluded ids list
+     */
+    @Query("SELECT q.id FROM QuestionEntity q WHERE q.id NOT IN :excludedIds")
+    List<Long> findIdsExcluding(@Param("excludedIds") List<Long> excludedIds);
 
 }
