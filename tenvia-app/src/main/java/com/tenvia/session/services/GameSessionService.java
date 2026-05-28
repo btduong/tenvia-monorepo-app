@@ -77,23 +77,25 @@ public class GameSessionService {
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
-        if (isExpired(session)) {
-            AnswerResponseDTO answerResponseDTO = AnswerResponseDTO.createAnswerTimedOutResponse();
-            session.advanceSkipCount();
-            return answerResponseDTO;
-        }
+
+        boolean hasTimedOut = isExpired(session);
+        boolean skipped = hasTimedOut || selectedOptionId == null;
 
         int currentQuestionIndex = session.getCurrentQuestionIndex();
         Long currentQuestionId = session.getQuestionIds().get(currentQuestionIndex);
 
         QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
-        boolean isCorrect = questionDTO.correctOptionId().equals(selectedOptionId);
-        // Handle correct case
-        int newBalance = session.getUser().getBalance();
-        if (isCorrect) {
-            session.updateCorrectAnswer();
+        boolean isCorrect = false;
+
+        if (skipped) {
+            session.advanceSkipCount();
         } else {
-            session.updateIncorrectAnswer();
+            isCorrect = questionDTO.correctOptionId().equals(selectedOptionId);
+            if (isCorrect) {
+                session.updateCorrectAnswer();
+            } else {
+                session.updateIncorrectAnswer();
+            }
         }
 
         // Move on to the next question
@@ -104,7 +106,7 @@ public class GameSessionService {
         }
 
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount(), session.getSkipQuestionCount());
-        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, newBalance, session.isOver(), currentQuestionIndex);
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, session.getUser().getBalance(), session.isOver(), currentQuestionIndex, hasTimedOut);
     }
 
     private static boolean isExpired(GameSessionEntity session) {
@@ -119,16 +121,6 @@ public class GameSessionService {
         GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
-        }
-
-        // if current question has expired, increase the question index to next question.
-        if (isExpired(session)) {
-            session.advanceQuestionIndex();
-            // Check again in case this skipped question is the last question
-            if (session.isOver()) {
-                finishSession(session);
-                throw new GameSessionOverException(sessionId);
-            }
         }
 
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());

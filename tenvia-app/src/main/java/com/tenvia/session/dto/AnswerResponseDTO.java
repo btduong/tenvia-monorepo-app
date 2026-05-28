@@ -19,7 +19,7 @@ public record AnswerResponseDTO(boolean isCorrect,
         return AnswerResponseDTO.builder().hasTimedOut(true).build();
     }
 
-    public static AnswerResponseDTO from(boolean isCorrect, QuestionDTO questionDTO, GameSessionSummary gameSessionSummary, int newBalance, boolean sessionIsOver, int currentQuestionIndex) {
+    public static AnswerResponseDTO from(boolean isCorrect, QuestionDTO questionDTO, GameSessionSummary gameSessionSummary, int newBalance, boolean sessionIsOver, int currentQuestionIndex, boolean hasTimedOut) {
         return AnswerResponseDTO.builder()
                 .isCorrect(isCorrect)
                 .correctLetter(questionDTO.correctLetter())
@@ -28,6 +28,7 @@ public record AnswerResponseDTO(boolean isCorrect,
                 .isGameOver(sessionIsOver)
                 .summary(gameSessionSummary)
                 .currentQuestionIndex(currentQuestionIndex)
+                .hasTimedOut(hasTimedOut)
                 .build();
     }
 
