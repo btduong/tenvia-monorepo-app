@@ -194,13 +194,12 @@ public class GameSessionEntity {
         }
     }
 
-    public boolean recordAnswer(Long selectedOptionId, Long correctOptionId) {
+    public boolean checkAnswer(Long selectedOptionId, Long correctOptionId) {
         if (isOver) {
             throw new GameSessionOverException(id);
         }
 
-        boolean hasTimedOut = isCurrentQuestionExpired();
-        boolean skipped = hasTimedOut || selectedOptionId == null;
+        boolean skipped = selectedOptionId == null;
         boolean isCorrect = correctOptionId.equals(selectedOptionId);;
 
         // If skipped then don't need to check for correct/incorrect answer.

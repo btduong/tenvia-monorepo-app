@@ -77,7 +77,7 @@ public class GameSessionService {
 
         boolean hasTimedOut = session.isCurrentQuestionExpired();
         QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
-        boolean isCorrect = session.recordAnswer(selectedOptionId, questionDTO.correctOptionId());
+        boolean isCorrect = session.checkAnswer(selectedOptionId, questionDTO.correctOptionId());
         int currentQuestionIndex = session.getCurrentQuestionIndex();
 
         if (session.isOver()) {
