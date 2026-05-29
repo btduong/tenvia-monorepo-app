@@ -25,47 +25,90 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * A Rich Domain Model represents a game session.
+ */
 @Entity
 @Table(name = "game_session")
 @Getter
 public class GameSessionEntity {
 
     /**
-     * Used by Spring Data for optimistic locking.
+     * Used by Spring Data for optimistic locking to prevent concurrent modification.
      */
     @Version
     private Long version;
 
+    /**
+     * Unique identifier for the game session.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "session_id")
     private UUID id;
 
-    @ElementCollection // all are records are stored in separate table
+    /**
+     * Ordered list of question IDs for players to play.
+     */
+    @ElementCollection
     @CollectionTable(name = "session_question_ids", joinColumns = @JoinColumn(name = "session_id"))
     @Column(name = "question_id")
     private List<Long> questionIds;
 
+    /**
+     * The zero-based index of the currently active question.
+     */
     private int currentQuestionIndex = 0;
 
-    private int score = 0;
     /**
-     * Tracking how many questions are skipped due to timed out.
+     * The total score accumulated by the user in this session.
+     */
+    private int score = 0;
+
+    /**
+     * Keeping track of how many questions are skipped due to timing out or missing answers.
      */
     private int skipQuestionCount = 0;
 
+    /**
+     * Indicating whether the game session has finished.
+     */
     private boolean isOver = false;
 
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    private int correctAnswerCount = 0;
-    private int incorrectAnswerCount = 0;
-    private LocalDateTime questionStartTime;
     /**
-     * The time limit in second before the answer is marked as expired.
+     * The timestamp when the game session was started.
+     */
+    private LocalDateTime startTime;
+
+    /**
+     * The timestamp when the game session is scheduled to end.
+     */
+    private LocalDateTime endTime;
+
+    /**
+     * Total number of questions answered correctly.
+     */
+    private int correctAnswerCount = 0;
+
+    /**
+     * Total number of questions answered incorrectly.
+     */
+    private int incorrectAnswerCount = 0;
+
+    /**
+     * The timestamp when the current question was presented to the user.
+     * Used to calculate timeouts.
+     */
+    private LocalDateTime questionStartTime;
+
+    /**
+     * The time limit in seconds before the answer is marked as expired.
      */
     private int questionTimeLimitInSeconds;
 
+    /**
+     * The user who owns and is playing this session.
+     */
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
@@ -77,9 +120,9 @@ public class GameSessionEntity {
     @Column(name = "current_question_powerup_limit")
     private int powerUpLimit = 1;
 
-    /***
-     * A list of power-up items has been activated for the current question.
-     * This list size cannot exceed @link powerUpLimit
+    /**
+     * A list of power-up items that have been activated for the current question.
+     * This list size cannot exceed {@link #powerUpLimit}.
      */
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "session_active_powerups", joinColumns = @JoinColumn(name = "session_id"))
@@ -90,6 +133,13 @@ public class GameSessionEntity {
     protected GameSessionEntity() {
     } // JPA compliant
 
+    /**
+     * Constructs a new game session with the given user, question ids, and time limits.
+     *
+     * @param user                       the player owning the session
+     * @param questionIds                the list of question IDs for this game
+     * @param questionTimeLimitInSeconds the time allowed per question
+     */
     public GameSessionEntity(UserEntity user, List<Long> questionIds, int questionTimeLimitInSeconds) {
         if (user == null || questionIds == null || questionIds.isEmpty()) {
             throw new IllegalArgumentException("User and QuestionIds must be valid");
@@ -103,13 +153,20 @@ public class GameSessionEntity {
         this.questionTimeLimitInSeconds = questionTimeLimitInSeconds;
     }
 
+    /**
+     * Starts the session by a given session duration.
+     * Timestamp the start time and computing the end time.
+     *
+     * @param sessionDurationInSecond the total maximum duration of the session
+     */
     public void startSession(int sessionDurationInSecond) {
         startTime = LocalDateTime.now();
         endTime = startTime.plusSeconds(sessionDurationInSecond);
     }
 
-    /***
-     * Increase the current question index.
+    /**
+     * Advances the session to the next question.
+     * If there are no more questions, the session is marked as over.
      */
     public void advanceQuestionIndex() {
         currentQuestionIndex++;
@@ -119,14 +176,21 @@ public class GameSessionEntity {
         }
     }
 
-    /***
+    /**
+     * Checks if the user has reached the maximum allowed power-ups for the current question.
      *
-     * @return true if power-up items has been used to the maximum limit.
+     * @return true if power-up items have been used to the maximum limit.
      */
     public boolean hasReachedPowerUpLimit() {
         return activePowerUps.size() >= powerUpLimit;
     }
 
+    /**
+     * Records a power-up as being activated for the current question.
+     *
+     * @param powerUpType the type of power-up activated
+     * @throws IllegalStateException if the power-up limit for this question has been reached
+     */
     public void addActivatedPowerUp(PowerUpType powerUpType) {
         if (hasReachedPowerUpLimit()) {
             throw new IllegalStateException("Has reached max power-up item usage: " + powerUpLimit);
@@ -134,6 +198,9 @@ public class GameSessionEntity {
         activePowerUps.add(powerUpType);
     }
 
+    /**
+     * Initializes the state for a new question, resetting the timer and power-up usage.
+     */
     public void startNewQuestion() {
         questionStartTime = LocalDateTime.now();
         activePowerUps.clear();
@@ -141,9 +208,11 @@ public class GameSessionEntity {
     }
 
     /**
-     * Swap current question for a random question in the database that is not already in the list of existing ids.
+     * Swaps the current question for a random question from the database.
+     * This action immediately transitions the session into the new question state.
      *
      * @param newQuestionId the id of the new question
+     * @throws GameSessionOverException if the session is already over
      */
     public void swapCurrentQuestion(Long newQuestionId) {
         if (isOver) {
@@ -154,27 +223,49 @@ public class GameSessionEntity {
         startNewQuestion();
     }
 
+    /**
+     * Increments the count of skipped or timed-out questions.
+     */
     public void advanceSkipCount() {
         skipQuestionCount++;
     }
 
+    /**
+     * Increments the score and correct answer count.
+     */
     public void updateCorrectAnswer() {
         score++;
         correctAnswerCount++;
     }
 
+    /**
+     * Increments the incorrect answer count.
+     */
     public void updateIncorrectAnswer() {
         incorrectAnswerCount++;
     }
 
+    /**
+     * Ends the game session.
+     */
     public void endSession() {
         isOver = true;
     }
 
+    /**
+     * Retrieves the database ID of the question currently being presented to the user.
+     *
+     * @return the question ID
+     */
     public Long getCurrentQuestionId() {
         return questionIds.get(currentQuestionIndex);
     }
 
+    /**
+     * Checks if the time limit for answering the current question has elapsed.
+     *
+     * @return true if the question has expired, false otherwise
+     */
     public boolean isCurrentQuestionExpired() {
         // If this is the 1st question.
         if (questionStartTime == null) {
@@ -184,6 +275,12 @@ public class GameSessionEntity {
         return LocalDateTime.now().isAfter(questionStartTime.plusSeconds(questionTimeLimitInSeconds));
     }
 
+    /**
+     * Calculates the remaining time allowed to answer the current question.
+     * Automatically initializes the question timer if it hasn't started yet.
+     *
+     * @return the remaining time in seconds (clamped to a minimum of 0)
+     */
     public int getRemainingQuestionTimeInSeconds() {
         if (questionStartTime == null) {
             startNewQuestion();
@@ -194,18 +291,30 @@ public class GameSessionEntity {
         }
     }
 
+    /**
+     * Checks a submitted answer against the correct answer.
+     * Evaluates timeouts, updates session statistics (score, skip count, etc.),
+     * and advances the session to the next question.
+     *
+     * @param selectedOptionId the option ID chosen by the user (can be null)
+     * @param correctOptionId  the actual correct option ID for the question
+     * @return true if the user selected the correct option within the time limit, false otherwise
+     * @throws GameSessionOverException if attempting to answer when the session is over
+     */
     public boolean checkAnswer(Long selectedOptionId, Long correctOptionId) {
         if (isOver) {
             throw new GameSessionOverException(id);
         }
 
-        boolean skipped = selectedOptionId == null;
-        boolean isCorrect = correctOptionId.equals(selectedOptionId);;
+        boolean hasTimedOut = isCurrentQuestionExpired();
+        boolean skipped = hasTimedOut || selectedOptionId == null;
+        boolean isCorrect = false;
 
         // If skipped then don't need to check for correct/incorrect answer.
         if (skipped) {
             advanceSkipCount();
         } else {
+            isCorrect = correctOptionId.equals(selectedOptionId);
             if (isCorrect) {
                 updateCorrectAnswer();
             } else {
