@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.Getter;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -172,6 +173,50 @@ public class GameSessionEntity {
 
     public Long getCurrentQuestionId() {
         return questionIds.get(currentQuestionIndex);
+    }
+
+    public boolean isCurrentQuestionExpired() {
+        // If this is the 1st question.
+        if (questionStartTime == null) {
+            return false;
+        }
+
+        return LocalDateTime.now().isAfter(questionStartTime.plusSeconds(questionTimeLimitInSeconds));
+    }
+
+    public int getRemainingQuestionTimeInSeconds() {
+        if (questionStartTime == null) {
+            startNewQuestion();
+            return questionTimeLimitInSeconds;
+        } else {
+            long elapsed = Duration.between(questionStartTime, LocalDateTime.now()).getSeconds();
+            return (int) Math.max(questionTimeLimitInSeconds - elapsed, 0);
+        }
+    }
+
+    public boolean recordAnswer(Long selectedOptionId, Long correctOptionId) {
+        if (isOver) {
+            throw new GameSessionOverException(id);
+        }
+
+        boolean hasTimedOut = isCurrentQuestionExpired();
+        boolean skipped = hasTimedOut || selectedOptionId == null;
+        boolean isCorrect = correctOptionId.equals(selectedOptionId);;
+
+        // If skipped then don't need to check for correct/incorrect answer.
+        if (skipped) {
+            advanceSkipCount();
+        } else {
+            if (isCorrect) {
+                updateCorrectAnswer();
+            } else {
+                updateIncorrectAnswer();
+            }
+        }
+
+        advanceQuestionIndex();
+
+        return isCorrect;
     }
 
 }

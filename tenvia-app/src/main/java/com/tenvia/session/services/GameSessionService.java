@@ -67,33 +67,18 @@ public class GameSessionService {
     }
 
     public AnswerResponseDTO validateAnswer(UUID sessionId, Long selectedOptionId) {
+
         GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
         }
 
-        boolean hasTimedOut = isExpired(session);
-        boolean skipped = hasTimedOut || selectedOptionId == null;
+        Long currentQuestionId = session.getCurrentQuestionId();
 
-        int currentQuestionIndex = session.getCurrentQuestionIndex();
-        Long currentQuestionId = session.getQuestionIds().get(currentQuestionIndex);
-
+        boolean hasTimedOut = session.isCurrentQuestionExpired();
         QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
-        boolean isCorrect = false;
-
-        if (skipped) {
-            session.advanceSkipCount();
-        } else {
-            isCorrect = questionDTO.correctOptionId().equals(selectedOptionId);
-            if (isCorrect) {
-                session.updateCorrectAnswer();
-            } else {
-                session.updateIncorrectAnswer();
-            }
-        }
-
-        // Move on to the next question
-        session.advanceQuestionIndex();
+        boolean isCorrect = session.recordAnswer(selectedOptionId, questionDTO.correctOptionId());
+        int currentQuestionIndex = session.getCurrentQuestionIndex();
 
         if (session.isOver()) {
             finishSession(session);
@@ -101,14 +86,6 @@ public class GameSessionService {
 
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount(), session.getSkipQuestionCount());
         return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, session.getUser().getBalance(), session.isOver(), currentQuestionIndex, hasTimedOut);
-    }
-
-    private static boolean isExpired(GameSessionEntity session) {
-        // If this is the 1st question.
-        if (session.getQuestionStartTime() == null) return false;
-
-        LocalDateTime questionStartTime = session.getQuestionStartTime();
-        return LocalDateTime.now().isAfter(questionStartTime.plusSeconds(session.getQuestionTimeLimitInSeconds()));
     }
 
     public ClientQuestionDTO getNextQuestion(UUID sessionId) {
@@ -120,14 +97,7 @@ public class GameSessionService {
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());
         QuestionDTO questionDTO = questionService.getQuestionById(currentQuestionId);
 
-        int expiresInSeconds;
-        if (session.getQuestionStartTime() == null) {
-            session.startNewQuestion();
-            expiresInSeconds = session.getQuestionTimeLimitInSeconds();
-        } else {
-            long elapsed = Duration.between(session.getQuestionStartTime(), LocalDateTime.now()).getSeconds();
-            expiresInSeconds = (int) Math.max(session.getQuestionTimeLimitInSeconds() - elapsed, 0);
-        }
+        int expiresInSeconds = session.getRemainingQuestionTimeInSeconds();
 
         return ClientQuestionDTO.from(questionDTO, session.getCurrentQuestionIndex(), expiresInSeconds);
     }
