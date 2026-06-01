@@ -55,22 +55,30 @@ public class GameSessionService {
         return GameSessionDTO.from(savedSession, questionDTOList, remainingDuration);
     }
 
-    public void abandonSession(UUID sessionId) {
+    public void abandonSession(UUID sessionId, Long userId) {
         GameSessionEntity session = getSessionOrThrow(sessionId);
 
         if (session.isOver()) {
             return;
         }
 
+        if (!session.getUser().getId().equals(userId)) {
+            throw new InvalidSessionOwnerException(sessionId, userId);
+        }
+
         session.endSession();
         log.info("Session: {} has successfully abadoned", sessionId);
     }
 
-    public AnswerResponseDTO validateAnswer(UUID sessionId, Long selectedOptionId) {
+    public AnswerResponseDTO validateAnswer(UUID sessionId, Long selectedOptionId, Long userId) {
 
         GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
+        }
+
+        if (!session.getUser().getId().equals(userId)) {
+            throw new InvalidSessionOwnerException(sessionId, userId);
         }
 
         Long currentQuestionId = session.getCurrentQuestionId();
@@ -88,10 +96,14 @@ public class GameSessionService {
         return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, session.getUser().getBalance(), session.isOver(), currentQuestionIndex, hasTimedOut);
     }
 
-    public ClientQuestionDTO getNextQuestion(UUID sessionId) {
+    public ClientQuestionDTO getNextQuestion(UUID sessionId, Long userId) {
         GameSessionEntity session = getSessionOrThrow(sessionId);
         if (session.isOver()) {
             throw new GameSessionOverException(sessionId);
+        }
+
+        if (!session.getUser().getId().equals(userId)) {
+            throw new InvalidSessionOwnerException(sessionId, userId);
         }
 
         Long currentQuestionId = session.getQuestionIds().get(session.getCurrentQuestionIndex());

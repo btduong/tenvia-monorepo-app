@@ -7,6 +7,7 @@ import com.tenvia.session.dto.GameSessionDTO;
 import com.tenvia.session.services.GameSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,27 +25,31 @@ public class GameSessionController {
     @Autowired
     private GameSessionService gameSessionService;
 
-
-
     @PostMapping("/start")
-    public GameSessionDTO startNewSession(@RequestParam Long id, @RequestParam int limit) {
-        return gameSessionService.createNewSession(id, limit);
+    public GameSessionDTO startNewSession(@AuthenticationPrincipal String userIdString, @RequestParam int limit) {
+
+        Long userId = Long.valueOf(userIdString);
+
+        return gameSessionService.createNewSession(userId, limit);
     }
 
     @PostMapping("/{sessionId}/answer")
-    public ResponseEntity<AnswerResponseDTO> verify(@PathVariable UUID sessionId, @RequestBody AnswerRequestDTO request) {
-        AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(sessionId, request.getSelectedOptionId());
+    public ResponseEntity<AnswerResponseDTO> verify(@AuthenticationPrincipal String userIdString, @PathVariable UUID sessionId, @RequestBody AnswerRequestDTO request) {
+        Long userId = Long.valueOf(userIdString);
+        AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(sessionId, request.getSelectedOptionId(), userId);
         return ResponseEntity.ok(answerResponseDTO);
     }
 
     @GetMapping("/{sessionId}/questions/next")
-    public ClientQuestionDTO getNextQuestion(@PathVariable UUID sessionId) {
-        return gameSessionService.getNextQuestion(sessionId);
+    public ClientQuestionDTO getNextQuestion(@AuthenticationPrincipal String userIdString, @PathVariable UUID sessionId) {
+        Long userId = Long.valueOf(userIdString);
+        return gameSessionService.getNextQuestion(sessionId, userId);
     }
 
     @PostMapping("/{sessionId}/abandon")
-    public ResponseEntity<Void> abandonSession(@PathVariable UUID sessionId) {
-        gameSessionService.abandonSession(sessionId);
+    public ResponseEntity<Void> abandonSession(@AuthenticationPrincipal String userIdString, @PathVariable UUID sessionId) {
+        Long userId = Long.valueOf(userIdString);
+        gameSessionService.abandonSession(sessionId, userId);
         return ResponseEntity.ok().build();
     }
 

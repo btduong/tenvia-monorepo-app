@@ -1,6 +1,8 @@
 package com.tenvia.user;
 
 
+import com.tenvia.security.JwtUtil;
+import com.tenvia.user.dto.LoginDTO;
 import com.tenvia.user.dto.UserDTO;
 import com.tenvia.user.entities.UserEntity;
 import com.tenvia.user.services.UserService;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
@@ -24,6 +27,8 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
     private MockMvc mockMvc;
     @MockitoBean
     private UserService userService;
@@ -31,19 +36,22 @@ class UserControllerTest {
     @Test
     void canLogin() throws Exception {
         String username = "alice";
+        String token = jwtUtil.generateToken(1L);
         UserEntity userEntity = new UserEntity(username);
+        ReflectionTestUtils.setField(userEntity, "id", 1L);
         when(userService.login(username)).thenReturn(userEntity);
 
         String responseData = mockMvc.perform(post("/users/login")
+                        .header("Authorization", "Bearer " + token)
                         .param("username", username))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        UserDTO userResponse = objectMapper.readValue(responseData, UserDTO.class);
-        assertThat(userResponse.username()).isEqualTo("alice");
-        assertThat(userResponse.balance()).isEqualTo(0);
+        LoginDTO loginDTO = objectMapper.readValue(responseData, LoginDTO.class);
+        assertThat(loginDTO.userDTO().username()).isEqualTo("alice");
+        assertThat(loginDTO.userDTO().balance()).isEqualTo(0);
     }
 
     @Test
