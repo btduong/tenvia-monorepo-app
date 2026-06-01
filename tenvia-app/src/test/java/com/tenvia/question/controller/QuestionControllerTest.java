@@ -1,10 +1,10 @@
 package com.tenvia.question.controller;
 
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.question.service.QuestionService;
+import com.tenvia.security.JwtUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +12,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -29,11 +31,18 @@ class QuestionControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private JwtUtil jwtUtil;
     @MockitoBean
     private QuestionService questionService;
 
+    @BeforeEach
+    public void setUp() {
+    }
+
     @Test
     void canFetchQuestions() throws Exception {
+        String token = jwtUtil.generateToken(1L);
         QuestionDTO questionDTO = QuestionDTO.builder()
                 .id(1L)
                 .questionText("who are you")
@@ -49,6 +58,7 @@ class QuestionControllerTest {
         when(questionService.fetchRandomQuestion(10)).thenReturn(questionDTOList);
 
         String responseData = mockMvc.perform(get("/questions/random")
+                        .header("Authorization", "Bearer " + token)
                         .param("limit", "10"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn()

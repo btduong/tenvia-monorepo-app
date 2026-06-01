@@ -1,6 +1,7 @@
 package com.tenvia.shop.controller;
 
 import com.tenvia.common.dto.QuestionDTO;
+import com.tenvia.security.JwtUtil;
 import com.tenvia.session.dto.AppliedEffectResult;
 import com.tenvia.session.exceptions.InvalidSessionOwnerException;
 import com.tenvia.shop.PowerUpType;
@@ -34,6 +35,8 @@ class PowerUpControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
     private MockMvc mockMvc;
     @MockitoBean
     private PowerUpService powerUpService;
@@ -44,6 +47,7 @@ class PowerUpControllerTest {
 
     @Test
     void canUsePowerUp() throws Exception {
+        String token = jwtUtil.generateToken(1L);
         PowerUpType powerToUse = PowerUpType.HAMMER;
         LocalDateTime createdAt = LocalDateTime.now();
         UserDTO userDTO = new UserDTO(1L, "alice", createdAt, 0, new HashMap<>());
@@ -55,6 +59,7 @@ class PowerUpControllerTest {
         when(powerUpService.applyPowerUp(userId, sessionId, powerToUse)).thenReturn(response);
 
         String responseJson = mockMvc.perform(post("/api/powerups/use")
+                        .header("Authorization", "Bearer " + token)
                         .param("type", powerToUse.toString())
                         .param("userId", userId.toString())
                         .param("sessionId", sessionId.toString()))

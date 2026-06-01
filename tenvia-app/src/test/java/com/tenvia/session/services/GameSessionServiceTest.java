@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -66,6 +67,7 @@ class GameSessionServiceTest {
         questionDTO = QuestionDTO.builder().correctOptionId(1L).options(List.of(qOption1, qOption2, qOption3, qOption4)).build();
 
         userEntity = new UserEntity("username");
+        ReflectionTestUtils.setField(userEntity, "id", 1L);
 
         session = new GameSessionEntity(userEntity, List.of(1L), sessionConfig.getQuestionTimeLimitInSeconds());
         session.startSession(5);
@@ -97,7 +99,7 @@ class GameSessionServiceTest {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
 
-        AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L);
+        AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L, session.getUser().getId());
 
         assertEquals(1, session.getCurrentQuestionIndex());
         assertTrue(result.isCorrect());
@@ -109,7 +111,7 @@ class GameSessionServiceTest {
 
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
 
-        assertThrows(RuntimeException.class, () -> gameSessionService.validateAnswer(sessionId, 10L));
+        assertThrows(RuntimeException.class, () -> gameSessionService.validateAnswer(sessionId, 10L, session.getUser().getId()));
     }
 
     @Test
@@ -117,7 +119,7 @@ class GameSessionServiceTest {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
 
-        AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L);
+        AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L, session.getUser().getId());
 
         assertEquals(1, session.getCurrentQuestionIndex());
         assertTrue(result.isCorrect());
@@ -129,7 +131,7 @@ class GameSessionServiceTest {
         when(gameSessionRepository.findById(sessionId)).thenReturn(Optional.ofNullable(session));
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
 
-        AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L);
+        AnswerResponseDTO result = gameSessionService.validateAnswer(sessionId, 1L, session.getUser().getId());
         assertTrue(session.isOver());
         assertTrue(result.isGameOver());
     }

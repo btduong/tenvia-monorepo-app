@@ -3,6 +3,7 @@ package com.tenvia.session.services;
 import com.tenvia.TenviaApplication;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.config.SessionConfig;
+import com.tenvia.security.JwtUtil;
 import com.tenvia.session.dto.AnswerResponseDTO;
 import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.session.entities.GameSessionEntity;
@@ -23,6 +24,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -62,6 +64,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class GameSessionServiceIntegrationTest {
 
+    private static final List<Long> QUESTION_IDS = List.of(1L, 2L);
+
     @Container
     static RabbitMQContainer RABBITMQ_CONTAINER = new RabbitMQContainer("rabbitmq:3-management");
 
@@ -71,6 +75,8 @@ class GameSessionServiceIntegrationTest {
         registry.add("spring.rabbitmq.port", RABBITMQ_CONTAINER::getAmqpPort);
     }
 
+    @Autowired
+    private JwtUtil jwtUtil;
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
@@ -92,17 +98,18 @@ class GameSessionServiceIntegrationTest {
     private UUID activeSessionId;
     private UserEntity userEntity;
     private GameSessionEntity session;
-    private static final List<Long> QUESTION_IDS = List.of(1L, 2L);
+    private String token;
+
     @BeforeEach
     void setUp() {
-
         userEntity = new UserEntity("username");
         userRepository.save(userEntity);
 
         session = new GameSessionEntity(userEntity, QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
-
         GameSessionEntity saved = gameSessionRepository.save(session);
         activeSessionId = saved.getId();
+
+        token = jwtUtil.generateToken(userEntity.getId());
     }
 
     @Test
@@ -112,7 +119,7 @@ class GameSessionServiceIntegrationTest {
         // question 1 - incorrect
         QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
-        gameSessionService.validateAnswer(activeSessionId, 100L);
+        gameSessionService.validateAnswer(activeSessionId, 100L, session.getUser().getId());
         GameSessionEntity updatedSession = gameSessionRepository.findById(activeSessionId).get();
         assertEquals(1, updatedSession.getCurrentQuestionIndex());
         assertEquals(0, updatedSession.getScore());
@@ -120,7 +127,7 @@ class GameSessionServiceIntegrationTest {
         // question 2 - correct
         QuestionDTO questionDTO2 = QuestionDTO.builder().correctOptionId(400L).build();
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO2);
-        gameSessionService.validateAnswer(activeSessionId, 400L);
+        gameSessionService.validateAnswer(activeSessionId, 400L, session.getUser().getId());
         updatedSession = gameSessionRepository.findById(activeSessionId).get();
         assertEquals(2, updatedSession.getCurrentQuestionIndex());
         assertEquals(1, updatedSession.getScore());
@@ -136,7 +143,7 @@ class GameSessionServiceIntegrationTest {
     void expectSkipValidation_whenQuestionTimedOut() {
         QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
-        ClientQuestionDTO nextQuestion = gameSessionService.getNextQuestion(activeSessionId);
+        ClientQuestionDTO nextQuestion = gameSessionService.getNextQuestion(activeSessionId, session.getUser().getId());
         assertEquals(0, nextQuestion.index());
 
         GameSessionEntity updatedSession = gameSessionRepository.findById(activeSessionId).get();
@@ -153,14 +160,15 @@ class GameSessionServiceIntegrationTest {
                 .until(() -> true);
 
         // Validate
-        AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(activeSessionId, 100L);
+        AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(activeSessionId, 100L, session.getUser().getId());
         assertTrue(answerResponseDTO.hasTimedOut());
         assertEquals(1, session.getSkipQuestionCount());
     }
 
     @Test
     void expectAbandonSessionSuccessfully() throws Exception {
-        mockMvc.perform(post("/sessions/{sessionId}/abandon", activeSessionId.toString()))
+        mockMvc.perform(post("/sessions/{sessionId}/abandon", activeSessionId.toString())
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk()); // Assert HTTP 200
         GameSessionEntity abandonedSession = gameSessionRepository.findById(session.getId()).get();
         assertTrue(abandonedSession.isOver());
@@ -182,7 +190,8 @@ class GameSessionServiceIntegrationTest {
                 .build();
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
 
-        String questionData1 = mockMvc.perform(get("/sessions/{sessionId}/questions/next", customSessionId.toString()))
+        String questionData1 = mockMvc.perform(get("/sessions/{sessionId}/questions/next", customSessionId.toString())
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -193,7 +202,8 @@ class GameSessionServiceIntegrationTest {
                 .atMost(2, TimeUnit.SECONDS)
                 .until(() -> true);
 
-        String questionData2 = mockMvc.perform(get("/sessions/{sessionId}/questions/next", customSessionId.toString()))
+        String questionData2 = mockMvc.perform(get("/sessions/{sessionId}/questions/next", customSessionId.toString())
+                .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
