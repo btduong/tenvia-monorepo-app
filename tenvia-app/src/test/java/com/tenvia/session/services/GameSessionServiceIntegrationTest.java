@@ -3,28 +3,26 @@ package com.tenvia.session.services;
 import com.tenvia.TenviaApplication;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.config.SessionConfig;
+import com.tenvia.question.dto.ClientQuestionDTO;
+import com.tenvia.question.service.QuestionService;
 import com.tenvia.security.JwtUtil;
 import com.tenvia.session.dto.AnswerResponseDTO;
-import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.session.entities.GameSessionEntity;
-import com.tenvia.user.entities.UserEntity;
-import com.tenvia.question.service.QuestionService;
-import com.tenvia.user.services.UserService;
-import com.tenvia.user.repositories.UserRepository;
 import com.tenvia.session.repositories.GameSessionRepository;
+import com.tenvia.user.entities.UserEntity;
+import com.tenvia.user.repositories.UserRepository;
+import com.tenvia.user.services.UserService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -67,13 +65,8 @@ class GameSessionServiceIntegrationTest {
     private static final List<Long> QUESTION_IDS = List.of(1L, 2L);
 
     @Container
+    @ServiceConnection
     static RabbitMQContainer RABBITMQ_CONTAINER = new RabbitMQContainer("rabbitmq:3-management");
-
-    @DynamicPropertySource
-    static void configProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.rabbitmq.host", RABBITMQ_CONTAINER::getHost);
-        registry.add("spring.rabbitmq.port", RABBITMQ_CONTAINER::getAmqpPort);
-    }
 
     @Autowired
     private JwtUtil jwtUtil;
