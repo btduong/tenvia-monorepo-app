@@ -90,10 +90,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build JAR
-        # -pl (project list);ea ${{ matrix.service }} is the name of the module that changes; -am (also make) build dependencies that
-        run: ./mvnw clean install -pl ${{ matrix.service }} -am -DskipTests
-
       - name: Build Docker Image
         run: |
           VERSION=${{ steps.get_version.outputs.VERSION }}
