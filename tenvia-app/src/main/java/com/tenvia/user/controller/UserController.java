@@ -26,7 +26,7 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
         UserEntity userEntity = userService.login(username);
-        String jwt = jwtUtil.generateToken(userEntity.getId());
+        String jwt = jwtUtil.generateToken(userEntity.getId(), userEntity.getRole());
         LoginDTO loginDTO = new LoginDTO(UserDTO.from(userEntity), jwt);
         return ResponseEntity.ok(loginDTO);
     }

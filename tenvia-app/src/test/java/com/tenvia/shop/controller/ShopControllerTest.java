@@ -1,5 +1,6 @@
 package com.tenvia.shop.controller;
 
+import com.tenvia.common.UserRole;
 import com.tenvia.security.JwtUtil;
 import com.tenvia.session.services.GameSessionService;
 import com.tenvia.shop.PowerUpType;
@@ -50,7 +51,7 @@ class ShopControllerTest {
 
     @BeforeEach
     void setUp() {
-        token = jwtUtil.generateToken(1L);
+        token = jwtUtil.generateToken(1L, UserRole.ROLE_USER);
         sessionId = UUID.randomUUID();
     }
 
