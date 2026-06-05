@@ -1,6 +1,7 @@
 package com.tenvia.user;
 
 
+import com.tenvia.common.UserRole;
 import com.tenvia.security.JwtUtil;
 import com.tenvia.user.dto.LoginDTO;
 import com.tenvia.user.dto.UserDTO;
@@ -36,7 +37,7 @@ class UserControllerTest {
     @Test
     void canLogin() throws Exception {
         String username = "alice";
-        String token = jwtUtil.generateToken(1L);
+        String token = jwtUtil.generateToken(1L, UserRole.ROLE_USER);
         UserEntity userEntity = new UserEntity(username);
         ReflectionTestUtils.setField(userEntity, "id", 1L);
         when(userService.login(username)).thenReturn(userEntity);

@@ -1,5 +1,6 @@
 package com.tenvia.security;
 
+import com.tenvia.common.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -18,11 +19,14 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private final String secretKey;
+    private final long jwtExpirationMs;
 
-    @Value("${jwt.expiration:86400000}")
-    private long jwtExpirationMs;
+    public JwtUtil(@Value("${jwt.secret}") String secretKey,
+                   @Value("${jwt.expiration:86400000}") long jwtExpirationMs) {
+        this.secretKey = secretKey;
+        this.jwtExpirationMs = jwtExpirationMs;
+    }
 
     /**
      * Generates a new JWT token for a given user ID.
@@ -31,11 +35,12 @@ public class JwtUtil {
      * @param userId the ID of the user to generate the token for
      * @return a signed JWT string
      */
-    public String generateToken(Long userId) {
+    public String generateToken(Long userId, UserRole role) {
         return Jwts.builder()
                 .signWith(getSignInKey())
                 .subject(userId.toString())
                 .claim("userId", userId)
+                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .compact();
@@ -54,6 +59,21 @@ public class JwtUtil {
                 .build()
                 .parseSignedClaims(jwt);
         return parsedClaims.getPayload().getSubject();
+    }
+
+    /**
+     * Extracts the role from the provided JWT string.
+     * @param jwt the signed JWT string
+     * @return {@link UserRole}
+     */
+    public UserRole extractRole(String jwt) {
+        SecretKey key = getSignInKey();
+        Jws<Claims> parsedClaims = Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(jwt);
+        String roleString = parsedClaims.getPayload().get("role", String.class);
+        return UserRole.valueOf(roleString);
     }
 
     /**

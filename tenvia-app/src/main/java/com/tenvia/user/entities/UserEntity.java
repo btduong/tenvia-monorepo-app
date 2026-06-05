@@ -1,11 +1,13 @@
 package com.tenvia.user.entities;
 
+import com.tenvia.common.UserRole;
 import com.tenvia.shop.PowerUpType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -49,9 +51,15 @@ public class UserEntity {
     @Column(name = "quantity")
     private Map<PowerUpType, Integer> inventory = new HashMap<>();
 
+    /**
+     * The role for this user.
+     */
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
     public UserEntity(String username) {
         this.username = username;
+        this.role = UserRole.ROLE_USER;
     }
 
     protected UserEntity() {}

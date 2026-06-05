@@ -1,6 +1,7 @@
 package com.tenvia.session.services;
 
 import com.tenvia.TenviaApplication;
+import com.tenvia.common.UserRole;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.question.dto.ClientQuestionDTO;
@@ -102,7 +103,7 @@ class GameSessionServiceIntegrationTest {
         GameSessionEntity saved = gameSessionRepository.save(session);
         activeSessionId = saved.getId();
 
-        token = jwtUtil.generateToken(userEntity.getId());
+        token = jwtUtil.generateToken(userEntity.getId(), userEntity.getRole());
     }
 
     @Test

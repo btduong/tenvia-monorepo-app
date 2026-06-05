@@ -1,5 +1,6 @@
 package com.tenvia.question.controller;
 
+import com.tenvia.common.UserRole;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.question.service.QuestionService;
@@ -42,7 +43,7 @@ class QuestionControllerTest {
 
     @Test
     void canFetchQuestions() throws Exception {
-        String token = jwtUtil.generateToken(1L);
+        String token = jwtUtil.generateToken(1L, UserRole.ROLE_USER);
         QuestionDTO questionDTO = QuestionDTO.builder()
                 .id(1L)
                 .questionText("who are you")

@@ -1,5 +1,6 @@
 package com.tenvia.shop.controller;
 
+import com.tenvia.common.UserRole;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.security.JwtUtil;
 import com.tenvia.session.dto.AppliedEffectResult;
@@ -47,7 +48,7 @@ class PowerUpControllerTest {
 
     @Test
     void canUsePowerUp() throws Exception {
-        String token = jwtUtil.generateToken(1L);
+        String token = jwtUtil.generateToken(1L, UserRole.ROLE_USER);
         PowerUpType powerToUse = PowerUpType.HAMMER;
         LocalDateTime createdAt = LocalDateTime.now();
         UserDTO userDTO = new UserDTO(1L, "alice", createdAt, 0, new HashMap<>());
