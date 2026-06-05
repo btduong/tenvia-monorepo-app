@@ -19,11 +19,14 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private final String secretKey;
+    private final long jwtExpirationMs;
 
-    @Value("${jwt.expiration:86400000}")
-    private long jwtExpirationMs;
+    public JwtUtil(@Value("${jwt.secret}") String secretKey,
+                   @Value("${jwt.expiration:86400000}") long jwtExpirationMs) {
+        this.secretKey = secretKey;
+        this.jwtExpirationMs = jwtExpirationMs;
+    }
 
     /**
      * Generates a new JWT token for a given user ID.
