@@ -1,4 +1,4 @@
-package com.tenvia.security;
+package com.tenvia.common.security;
 
 import com.tenvia.common.UserRole;
 import org.junit.jupiter.api.BeforeEach;

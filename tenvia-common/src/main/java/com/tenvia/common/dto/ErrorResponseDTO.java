@@ -1,4 +1,4 @@
-package com.tenvia.core.exception;
+package com.tenvia.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

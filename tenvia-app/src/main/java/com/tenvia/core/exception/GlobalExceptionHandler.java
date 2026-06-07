@@ -14,45 +14,45 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(QuestionNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> handleQuestionNotFound(QuestionNotFoundException ex) {
+    public ResponseEntity<com.tenvia.common.dto.ErrorResponseDTO> handleQuestionNotFound(QuestionNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponseDTO.builder()
+                .body(com.tenvia.common.dto.ErrorResponseDTO.builder()
                         .errorCode("QUESTION NOT FOUND")
                         .errorMessage(ex.getMessage())
                         .build());
     }
 
     @ExceptionHandler(GameSessionOverException.class)
-    public ResponseEntity<ErrorResponseDTO> handleSessionOver(GameSessionOverException ex) {
+    public ResponseEntity<com.tenvia.common.dto.ErrorResponseDTO> handleSessionOver(GameSessionOverException ex) {
         return ResponseEntity.status(HttpStatus.GONE)
-                .body(ErrorResponseDTO.builder()
+                .body(com.tenvia.common.dto.ErrorResponseDTO.builder()
                         .errorCode("SESSION FINISHED")
                         .errorMessage(ex.getMessage())
                         .build());
     }
 
     @ExceptionHandler(FiftyFiftyOptionUsedException.class)
-    public ResponseEntity<ErrorResponseDTO> handleFiftyFiftyOptionUsed(FiftyFiftyOptionUsedException ex) {
+    public ResponseEntity<com.tenvia.common.dto.ErrorResponseDTO> handleFiftyFiftyOptionUsed(FiftyFiftyOptionUsedException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponseDTO.builder()
+                .body(com.tenvia.common.dto.ErrorResponseDTO.builder()
                         .errorCode("50/50 ALREADY USED")
                         .errorMessage(ex.getMessage())
                         .build());
     }
 
     @ExceptionHandler(UserIdNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> handleUserIdNotFound(UserIdNotFoundException ex) {
+    public ResponseEntity<com.tenvia.common.dto.ErrorResponseDTO> handleUserIdNotFound(UserIdNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponseDTO.builder()
+                .body(com.tenvia.common.dto.ErrorResponseDTO.builder()
                         .errorCode("userId does not exist")
                         .errorMessage(ex.getMessage())
                         .build());
     }
 
     @ExceptionHandler(InvalidSessionOwnerException.class)
-    public ResponseEntity<ErrorResponseDTO> handleInvalidSessionOwner(InvalidSessionOwnerException ex) {
+    public ResponseEntity<com.tenvia.common.dto.ErrorResponseDTO> handleInvalidSessionOwner(InvalidSessionOwnerException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ErrorResponseDTO.builder()
+                .body(com.tenvia.common.dto.ErrorResponseDTO.builder()
                         .errorCode("FORBIDDEN")
                         .errorMessage(ex.getMessage())
                         .build());

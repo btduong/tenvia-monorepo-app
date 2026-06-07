@@ -2,7 +2,7 @@ package com.tenvia.shop.controller;
 
 import com.tenvia.common.UserRole;
 import com.tenvia.common.dto.QuestionDTO;
-import com.tenvia.security.JwtUtil;
+import com.tenvia.common.security.JwtUtil;
 import com.tenvia.session.dto.AppliedEffectResult;
 import com.tenvia.session.exceptions.InvalidSessionOwnerException;
 import com.tenvia.shop.PowerUpType;
