@@ -35,9 +35,4 @@ public class RabbitConfig {
     public Binding binding(Queue scoringQueue, TopicExchange gameExchange) {
         return  BindingBuilder.bind(scoringQueue).to(gameExchange).with(rabbitCommonConfig.getRoutingKey());
     }
-
-    @Bean
-    public JacksonJsonMessageConverter jsonMessageConverter() {
-        return new JacksonJsonMessageConverter();
-    }
 }
