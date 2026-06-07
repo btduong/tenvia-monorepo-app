@@ -131,7 +131,7 @@ jobs:
           fi
           
           ./mvnw build-helper:parse-version versions:set \
-            -DnewVersion=$NEW_VERSION \
+            -DnewVersion=$NEW_VERSION -DprocessAllModules=true \
             versions:commit
 
       - name: Commit and Push Version Bump
