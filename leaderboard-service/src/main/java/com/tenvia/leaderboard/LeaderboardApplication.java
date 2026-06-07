@@ -1,4 +1,4 @@
-package com.tenvia;
+package com.tenvia.leaderboard;
 
 import com.tenvia.common.config.WebConfig;
 import org.springframework.boot.SpringApplication;

@@ -1,6 +1,6 @@
 package com.tenvia.user.controller;
 
-import com.tenvia.security.JwtUtil;
+import com.tenvia.common.security.JwtUtil;
 import com.tenvia.user.dto.LoginDTO;
 import com.tenvia.user.dto.UserDTO;
 import com.tenvia.user.entities.UserEntity;

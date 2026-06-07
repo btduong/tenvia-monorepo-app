@@ -6,7 +6,7 @@ import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.config.SessionConfig;
 import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.question.service.QuestionService;
-import com.tenvia.security.JwtUtil;
+import com.tenvia.common.security.JwtUtil;
 import com.tenvia.session.dto.AnswerResponseDTO;
 import com.tenvia.session.entities.GameSessionEntity;
 import com.tenvia.session.repositories.GameSessionRepository;

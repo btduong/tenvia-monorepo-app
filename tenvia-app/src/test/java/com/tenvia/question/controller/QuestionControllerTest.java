@@ -4,7 +4,7 @@ import com.tenvia.common.UserRole;
 import com.tenvia.common.dto.QuestionDTO;
 import com.tenvia.question.dto.ClientQuestionDTO;
 import com.tenvia.question.service.QuestionService;
-import com.tenvia.security.JwtUtil;
+import com.tenvia.common.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

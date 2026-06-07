@@ -1,7 +1,7 @@
 package com.tenvia.shop.controller;
 
 import com.tenvia.common.UserRole;
-import com.tenvia.security.JwtUtil;
+import com.tenvia.common.security.JwtUtil;
 import com.tenvia.session.services.GameSessionService;
 import com.tenvia.shop.PowerUpType;
 import com.tenvia.shop.dto.CatalogItemDTO;

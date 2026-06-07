@@ -1,6 +1,6 @@
 package com.tenvia.config;
 
-import com.tenvia.security.JwtAuthenticationFilter;
+import com.tenvia.common.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
