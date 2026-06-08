@@ -14,12 +14,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
+
   grafana:
-    image: grafana/grafana-enterprise
+    image: grafana/grafana:latest
     container_name: grafana
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
 
   leaderboard-service:
     image: leaderboard-service:latest # The name it will create
