@@ -14,6 +14,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
 
   leaderboard-service:
     image: leaderboard-service:latest # The name it will create

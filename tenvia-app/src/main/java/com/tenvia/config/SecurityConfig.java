@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests.requestMatchers("/users/login").permitAll() // allows all to go to /login
                         .requestMatchers("/h2-console/**").permitAll() // permit console page
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()) // all other requests need a JWT token
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
