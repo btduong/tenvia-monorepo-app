@@ -13,7 +13,7 @@
 
     <groupId>com.tenvia</groupId>
     <artifactId>tenvia-common</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>

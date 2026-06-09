@@ -13,7 +13,7 @@
 
     <groupId>com.tenvia</groupId>
     <artifactId>leaderboard-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.5-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>com.tenvia</groupId>
             <artifactId>tenvia-common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.5-SNAPSHOT</version>
         </dependency>
 
         <!--        // Tests-->
