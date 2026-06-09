@@ -22,6 +22,14 @@ services:
     volumes:
       - ./docker/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # Jeager UI
+      - "4318:4318" # accept OpenTelemetry Protocol (OTLP) over HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -46,6 +54,7 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
+      - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -63,6 +72,7 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
       - SESSION_TERMINATOR.SCHEDULE.RATE=600000 #session.terminator.schedule.rate
+      - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     depends_on:
       rabbitmq:
         condition: service_healthy
