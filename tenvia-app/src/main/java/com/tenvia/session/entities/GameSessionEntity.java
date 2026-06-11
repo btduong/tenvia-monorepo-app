@@ -2,7 +2,6 @@ package com.tenvia.session.entities;
 
 import com.tenvia.session.exceptions.GameSessionOverException;
 import com.tenvia.shop.PowerUpType;
-import com.tenvia.user.entities.UserEntity;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -14,7 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.Getter;
@@ -107,11 +105,10 @@ public class GameSessionEntity {
     private int questionTimeLimitInSeconds;
 
     /**
-     * The user who owns and is playing this session.
+     * The Id of the user who owns and is playing this session.
      */
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @Column(name = "user_id")
+    private Long userId;
 
     /**
      * The default maximum number of times power-up items can be used for a single question.
@@ -136,19 +133,19 @@ public class GameSessionEntity {
     /**
      * Constructs a new game session with the given user, question ids, and time limits.
      *
-     * @param user                       the player owning the session
+     * @param userId                     the Id of the player owning the session
      * @param questionIds                the list of question IDs for this game
      * @param questionTimeLimitInSeconds the time allowed per question
      */
-    public GameSessionEntity(UserEntity user, List<Long> questionIds, int questionTimeLimitInSeconds) {
-        if (user == null || questionIds == null || questionIds.isEmpty()) {
+    public GameSessionEntity(Long userId, List<Long> questionIds, int questionTimeLimitInSeconds) {
+        if (userId == null || questionIds == null || questionIds.isEmpty()) {
             throw new IllegalArgumentException("User and QuestionIds must be valid");
         }
         if (questionTimeLimitInSeconds <= 0) {
             throw new IllegalArgumentException("Time limit must be none zero");
         }
 
-        this.user = user;
+        this.userId = userId;
         this.questionIds = questionIds;
         this.questionTimeLimitInSeconds = questionTimeLimitInSeconds;
     }

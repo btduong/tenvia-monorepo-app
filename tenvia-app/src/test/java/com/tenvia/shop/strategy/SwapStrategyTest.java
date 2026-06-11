@@ -55,7 +55,7 @@ class SwapStrategyTest {
 
         questionDTO = QuestionDTO.builder().correctOptionId(1L).options(List.of(qOption1, qOption2, qOption3, qOption4)).build();
 
-        session = new GameSessionEntity(new UserEntity("username"), Arrays.asList(1L), sessionConfig.getQuestionTimeLimitInSeconds());
+        session = new GameSessionEntity(1L, Arrays.asList(1L), sessionConfig.getQuestionTimeLimitInSeconds());
         session.startSession(5);
     }
 
