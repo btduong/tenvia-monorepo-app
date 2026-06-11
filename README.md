@@ -1,11 +1,18 @@
- Tenvia is a simple trivia game of 10 questions as a Spring Boot app. It implemented some concepts such as user ID, game session, question management and power-up items (like 50-50 lifeline).
+ Tenvia is a Spring Boot application for a simple trivia game of 10 questions.
  
-## Application Overview
+ It implemented some concepts such as user ID, game session, question management and power-up items (like 50-50 lifeline).
+
+
+ ## Application Overview
 The application is a Maven multi-module monorepo to keep the deployment simple while maintaining a clear boundary between services.
 - **tenvia-app**: is a modular monolith (packaged by feature) to avoid network overhead when serving questions to clients 
 - **leaderboard-service**: is an event driven microservice for tracking high scores
 - **RabbitMQ**: for services intercommunication, the leaderboard-service listens to events from tenvia-app when a game session is finished
+- **Observability**: Prometheus (Metrics), Grafana (Visualization), and Jaeger (Distributed Tracing via OpenTelemetry)
 - *Infrastructure*: services are containerized in Docker images, deployed to Kubernetes (with readiness and liveness probes), CICD via Github Actions
+  
+The client is at [Tenvia-client](https://github.com/btduong/tenvia-js-client).
+
 
 ## Assets
 - The questions are from [OpenTriviaQA](https://github.com/uberspot/OpenTriviaQA)
@@ -20,7 +27,7 @@ To run the application locally using Docker.
 
 **Required:** Docker
 
-A convenient bash script to build the application artifacts, Docker images and then use docker compose run all the newly built Docker image:
+A convenient bash script to build and run the app's Docker images.
 
 ```
 # Build the apps and run the images
@@ -64,6 +71,14 @@ To stop the cluster
 ```
 minikube stop
 ```
+
+## Observability
+Once the application is running via Docker Compose, the observability stack runs locally at:
+- **Grafana (Dashboards)**: [http://localhost:3000](http://localhost:3000) (Includes JVM memory, CPU, and GC metrics)
+- **Jaeger (Distributed Tracing)**: [http://localhost:16686](http://localhost:16686) (Search for `tenvia-app` or `leaderboard-service` traces)
+- **Prometheus (Metrics Scraper)**: [http://localhost:9090](http://localhost:9090)
+
+The Spring Boot services natively export traces over OTLP directly to Jaeger and expose metrics on the `/actuator/prometheus` endpoint.
 
 ## Future work
 Set up an OpenID Connect with AWS to allow Github Actions push Docker images to ECR.
