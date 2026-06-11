@@ -98,8 +98,9 @@ class GameSessionServiceIntegrationTest {
     void setUp() {
         userEntity = new UserEntity("username");
         userRepository.save(userEntity);
+        when(userService.findUserById(anyLong())).thenReturn(userEntity);
 
-        session = new GameSessionEntity(userEntity, QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
+        session = new GameSessionEntity(userEntity.getId(), QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
         GameSessionEntity saved = gameSessionRepository.save(session);
         activeSessionId = saved.getId();
 
@@ -113,7 +114,7 @@ class GameSessionServiceIntegrationTest {
         // question 1 - incorrect
         QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
-        gameSessionService.validateAnswer(activeSessionId, 100L, session.getUser().getId());
+        gameSessionService.validateAnswer(activeSessionId, 100L, session.getUserId());
         GameSessionEntity updatedSession = gameSessionRepository.findById(activeSessionId).get();
         assertEquals(1, updatedSession.getCurrentQuestionIndex());
         assertEquals(0, updatedSession.getScore());
@@ -121,7 +122,7 @@ class GameSessionServiceIntegrationTest {
         // question 2 - correct
         QuestionDTO questionDTO2 = QuestionDTO.builder().correctOptionId(400L).build();
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO2);
-        gameSessionService.validateAnswer(activeSessionId, 400L, session.getUser().getId());
+        gameSessionService.validateAnswer(activeSessionId, 400L, session.getUserId());
         updatedSession = gameSessionRepository.findById(activeSessionId).get();
         assertEquals(2, updatedSession.getCurrentQuestionIndex());
         assertEquals(1, updatedSession.getScore());
@@ -137,7 +138,7 @@ class GameSessionServiceIntegrationTest {
     void expectSkipValidation_whenQuestionTimedOut() {
         QuestionDTO questionDTO = QuestionDTO.builder().correctOptionId(1L).build();
         when(questionService.getQuestionById(anyLong())).thenReturn(questionDTO);
-        ClientQuestionDTO nextQuestion = gameSessionService.getNextQuestion(activeSessionId, session.getUser().getId());
+        ClientQuestionDTO nextQuestion = gameSessionService.getNextQuestion(activeSessionId, session.getUserId());
         assertEquals(0, nextQuestion.index());
 
         GameSessionEntity updatedSession = gameSessionRepository.findById(activeSessionId).get();
@@ -154,7 +155,7 @@ class GameSessionServiceIntegrationTest {
                 .until(() -> true);
 
         // Validate
-        AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(activeSessionId, 100L, session.getUser().getId());
+        AnswerResponseDTO answerResponseDTO = gameSessionService.validateAnswer(activeSessionId, 100L, session.getUserId());
         assertTrue(answerResponseDTO.hasTimedOut());
         assertEquals(1, session.getSkipQuestionCount());
     }
@@ -171,7 +172,7 @@ class GameSessionServiceIntegrationTest {
     @Test
     void expectNoNewQuestionStart_whenRepeatedlyGetNextQuestion() throws Exception {
         // Create a custom session for this test with 5s limit
-        GameSessionEntity customSession = new GameSessionEntity(userEntity, QUESTION_IDS, 5);
+        GameSessionEntity customSession = new GameSessionEntity(userEntity.getId(), QUESTION_IDS, 5);
         customSession.startSession(60);
         gameSessionRepository.saveAndFlush(customSession);
 

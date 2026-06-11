@@ -45,14 +45,14 @@ public class GameSessionService {
         UserEntity user = userService.findUserById(userId);
         List<Long> questionIds = questionDTOList.stream().map(QuestionDTO::id).toList();
 
-        GameSessionEntity gameSessionEntity = new GameSessionEntity(user, questionIds, sessionConfig.getQuestionTimeLimitInSeconds());
+        GameSessionEntity gameSessionEntity = new GameSessionEntity(userId, questionIds, sessionConfig.getQuestionTimeLimitInSeconds());
         gameSessionEntity.startSession(sessionConfig.getDurationInSeconds());
 
         GameSessionEntity savedSession = gameSessionRepository.save(gameSessionEntity);
         long remainingDuration = Duration.between(LocalDateTime.now(), savedSession.getEndTime()).getSeconds();
         // Clamp the value in case 'now' > endTime -> negative value.
         remainingDuration = Math.max(remainingDuration, 0);
-        return GameSessionDTO.from(savedSession, questionDTOList, remainingDuration);
+        return GameSessionDTO.from(savedSession, questionDTOList, remainingDuration, user);
     }
 
     public void abandonSession(UUID sessionId, Long userId) {
@@ -62,7 +62,7 @@ public class GameSessionService {
             return;
         }
 
-        if (!session.getUser().getId().equals(userId)) {
+        if (!session.getUserId().equals(userId)) {
             throw new InvalidSessionOwnerException(sessionId, userId);
         }
 
@@ -77,7 +77,7 @@ public class GameSessionService {
             throw new GameSessionOverException(sessionId);
         }
 
-        if (!session.getUser().getId().equals(userId)) {
+        if (!session.getUserId().equals(userId)) {
             throw new InvalidSessionOwnerException(sessionId, userId);
         }
 
@@ -93,7 +93,8 @@ public class GameSessionService {
         }
 
         GameSessionSummary gameSessionSummary = new GameSessionSummary(session.getScore(), session.getCorrectAnswerCount(), session.getIncorrectAnswerCount(), session.getSkipQuestionCount());
-        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, session.getUser().getBalance(), session.isOver(), currentQuestionIndex, hasTimedOut);
+        UserEntity user = userService.findUserById(session.getUserId());
+        return AnswerResponseDTO.from(isCorrect, questionDTO, gameSessionSummary, user.getBalance(), session.isOver(), currentQuestionIndex, hasTimedOut);
     }
 
     public ClientQuestionDTO getNextQuestion(UUID sessionId, Long userId) {
@@ -102,7 +103,7 @@ public class GameSessionService {
             throw new GameSessionOverException(sessionId);
         }
 
-        if (!session.getUser().getId().equals(userId)) {
+        if (!session.getUserId().equals(userId)) {
             throw new InvalidSessionOwnerException(sessionId, userId);
         }
 
@@ -122,14 +123,15 @@ public class GameSessionService {
      */
     public void verifySessionIdOwner(UUID sessionID, Long userId) {
         GameSessionEntity gameSessionEntity = getSessionOrThrow(sessionID);
-        if (gameSessionEntity.getUser()== null || !gameSessionEntity.getUser().getId().equals(userId)) {
+        if (gameSessionEntity.getUserId() == null || !gameSessionEntity.getUserId().equals(userId)) {
             throw new InvalidSessionOwnerException(sessionID, userId);
         }
     }
 
     private void finishSession(GameSessionEntity session) {
+        UserEntity user = userService.findUserById(session.getUserId());
         // Publish the score
-        ScoreSubmittedEvent scoreSubmittedEvent = new ScoreSubmittedEvent(session.getUser().getUsername(), session.getScore());
+        ScoreSubmittedEvent scoreSubmittedEvent = new ScoreSubmittedEvent(user.getUsername(), session.getScore());
         log.debug("Submitting score {} for user: {}", scoreSubmittedEvent.score(), scoreSubmittedEvent.userName());
 
         // If RabbitMQ is down then this finishSession will roll back and user's reward will not get updated.

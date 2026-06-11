@@ -24,7 +24,7 @@ class GameSessionEntityTest {
         List<Long> questionIds = List.of(1L, 2L, 3L);
         int timeLimitInSeconds = 5;
 
-        session = new GameSessionEntity(user, questionIds, timeLimitInSeconds);
+        session = new GameSessionEntity(1L, questionIds, timeLimitInSeconds);
         session.startSession(60);
         session.startNewQuestion();
     }

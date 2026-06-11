@@ -37,7 +37,7 @@ class GameSessionRepositoryTest {
         for (int i = 0; i < 10; i++) {
             UserEntity user = new UserEntity("Player " + i);
             testEntityManager.persist(user);
-            GameSessionEntity session = new GameSessionEntity(user, QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
+            GameSessionEntity session = new GameSessionEntity(user.getId(), QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
             ReflectionTestUtils.setField(session, "score", i * 10);
             session.endSession();
             gameSessionRepository.save(session);
@@ -45,8 +45,8 @@ class GameSessionRepositoryTest {
 
         // A session not over yet
         UserEntity user = new UserEntity("Player.x");
-        GameSessionEntity sessionInPlay = new GameSessionEntity(user, QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
-        testEntityManager.persist(user);
+        user = testEntityManager.persistAndFlush(user);
+        GameSessionEntity sessionInPlay = new GameSessionEntity(user.getId(), QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
         ReflectionTestUtils.setField(sessionInPlay, "score", 999 );
         gameSessionRepository.save(sessionInPlay);
 
@@ -59,8 +59,8 @@ class GameSessionRepositoryTest {
     @Test
     void oneUserCanHaveMultipleSessions() {
         UserEntity user = testEntityManager.persist(new UserEntity("Alice"));
-        GameSessionEntity session1 = new GameSessionEntity(user, QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
-        GameSessionEntity session2 = new GameSessionEntity(user, QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
+        GameSessionEntity session1 = new GameSessionEntity(user.getId(), QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
+        GameSessionEntity session2 = new GameSessionEntity(user.getId(), QUESTION_IDS, sessionConfig.getQuestionTimeLimitInSeconds());
         ReflectionTestUtils.setField(session1, "score", 50);
         ReflectionTestUtils.setField(session2, "score", 100);
         session1.endSession();
@@ -71,7 +71,7 @@ class GameSessionRepositoryTest {
         List<GameSessionEntity> results = gameSessionRepository.findTop10ByIsOverTrueOrderByScoreDesc();
 
         assertEquals(2, results.size());
-        assertEquals("Alice", results.get(0).getUser().getUsername());
-        assertEquals("Alice", results.get(1).getUser().getUsername());
+        assertEquals(user.getId(), results.get(0).getUserId());
+        assertEquals(user.getId(), results.get(1).getUserId());
     }
 }

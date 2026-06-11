@@ -44,7 +44,7 @@ public class SessionTerminatorIntegrationTest {
     public void expect_findAndTerminate_OneSession() {
 
         int questionTimeLimitInSeconds = 5;
-        GameSessionEntity session1 = new GameSessionEntity(user, QUESTION_IDS, questionTimeLimitInSeconds);
+        GameSessionEntity session1 = new GameSessionEntity(user.getId(), QUESTION_IDS, questionTimeLimitInSeconds);
         session1.startSession(5);
         ReflectionTestUtils.setField(session1, "endTime", LocalDateTime.now().minusHours(1));
 
@@ -59,7 +59,7 @@ public class SessionTerminatorIntegrationTest {
     @Test
     public void expect_findAndTerminate_ZeroSession() {
         int questionTimeLimitInSeconds = 5;
-        GameSessionEntity session1 = new GameSessionEntity(user, QUESTION_IDS, questionTimeLimitInSeconds);
+        GameSessionEntity session1 = new GameSessionEntity(user.getId(), QUESTION_IDS, questionTimeLimitInSeconds);
         session1.startSession(60);
 
         gameSessionRepository.saveAllAndFlush(List.of(session1));

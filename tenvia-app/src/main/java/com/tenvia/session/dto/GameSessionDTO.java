@@ -21,8 +21,7 @@ public record GameSessionDTO(List<ClientQuestionDTO> questions,
                              long duration,
                              String endTime) {
 
-    public static GameSessionDTO from(GameSessionEntity entity, List<QuestionDTO> questions, long remainingDurationInSeconds) {
-        UserEntity user = entity.getUser();
+    public static GameSessionDTO from(GameSessionEntity entity, List<QuestionDTO> questions, long remainingDurationInSeconds, UserEntity user) {
         int timeLimit = entity.getQuestionTimeLimitInSeconds();
         List<ClientQuestionDTO> clientQuestionDTOS = IntStream.range(0, questions.size())
                 .mapToObj(i -> ClientQuestionDTO.from(questions.get(i), i, timeLimit))
