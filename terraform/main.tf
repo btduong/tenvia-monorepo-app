@@ -113,12 +113,19 @@ data "aws_subnets" "default" {
   }
 }
 
+# SSH Key Pair
+resource "aws_key_pair" "debug_key" {
+  key_name   = "tenvia-debug-key"
+  public_key = file("~/.ssh/tenvia_key.pub")
+}
+
 # EC2 Instance
 resource "aws_instance" "tenvia_server" {
   count         = var.server_running ? 1 : 0
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   subnet_id     = data.aws_subnets.default.ids[0]
+  key_name      = aws_key_pair.debug_key.key_name
 
   vpc_security_group_ids = [aws_security_group.tenvia_sg.id]
 
