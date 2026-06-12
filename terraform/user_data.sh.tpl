@@ -37,12 +37,20 @@ echo "Building and starting Docker containers..."
 docker compose up -d --build
 
 # Install Caddy for automatic HTTPS
-echo "Installing Caddy..."
-apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
+echo "Installing Caddy and NFS tools..."
+apt-get install -y debian-keyring debian-archive-keyring apt-transport-https nfs-common
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
 apt-get update
 apt-get install -y caddy
+
+# Mount EFS for persistent SSL storage
+echo "Mounting EFS to /var/lib/caddy..."
+mkdir -p /var/lib/caddy
+# Wait a few seconds for EFS DNS to fully propagate locally
+sleep 15
+mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${efs_dns}:/ /var/lib/caddy
+chown -R caddy:caddy /var/lib/caddy
 
 # Configure Caddy
 echo "Configuring Caddyfile..."

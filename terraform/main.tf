@@ -81,6 +81,14 @@ resource "aws_security_group" "tenvia_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "NFS for EFS"
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    self        = true
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -93,20 +101,56 @@ resource "aws_security_group" "tenvia_sg" {
   }
 }
 
+# Default VPC Subnets Lookup
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
 # EC2 Instance
 resource "aws_instance" "tenvia_server" {
+  count         = var.server_running ? 1 : 0
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
+  subnet_id     = data.aws_subnets.default.ids[0]
 
   vpc_security_group_ids = [aws_security_group.tenvia_sg.id]
 
   user_data = templatefile("${path.module}/user_data.sh.tpl", {
     domain_name = var.domain_name
+    efs_dns     = aws_efs_file_system.caddy_certs.dns_name
   })
+
+  depends_on = [aws_efs_mount_target.caddy_certs_mt]
 
   tags = {
     Name = "Tenvia-Playtest-Server"
   }
+}
+
+# EFS File System
+resource "aws_efs_file_system" "caddy_certs" {
+  creation_token = "caddy-certs-efs"
+  tags = {
+    Name = "Caddy-Certs-EFS"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# EFS Mount Target
+resource "aws_efs_mount_target" "caddy_certs_mt" {
+  file_system_id  = aws_efs_file_system.caddy_certs.id
+  subnet_id       = data.aws_subnets.default.ids[0]
+  security_groups = [aws_security_group.tenvia_sg.id]
 }
 
 # Route53 Zone
@@ -117,18 +161,20 @@ data "aws_route53_zone" "primary" {
 
 # DNS Record for the API
 resource "aws_route53_record" "api" {
+  count   = var.server_running ? 1 : 0
   zone_id = data.aws_route53_zone.primary.zone_id
   name    = "api.${var.domain_name}"
   type    = "A"
   ttl     = 300
-  records = [aws_instance.tenvia_server.public_ip]
+  records = [aws_instance.tenvia_server[0].public_ip]
 }
 
 # DNS Record for the Leaderboard
 resource "aws_route53_record" "leaderboard" {
+  count   = var.server_running ? 1 : 0
   zone_id = data.aws_route53_zone.primary.zone_id
   name    = "leaderboard.${var.domain_name}"
   type    = "A"
   ttl     = 300
-  records = [aws_instance.tenvia_server.public_ip]
+  records = [aws_instance.tenvia_server[0].public_ip]
 }

@@ -15,3 +15,9 @@ variable "domain_name" {
   type        = string
   default     = "tenviagame.com"
 }
+
+variable "server_running" {
+  description = "Set to true to spin up the EC2 server, false to destroy it while keeping the EFS drive"
+  type        = bool
+  default     = true
+}
