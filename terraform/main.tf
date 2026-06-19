@@ -130,8 +130,9 @@ resource "aws_instance" "tenvia_server" {
   vpc_security_group_ids = [aws_security_group.tenvia_sg.id]
 
   user_data = templatefile("${path.module}/user_data.sh.tpl", {
-    domain_name = var.domain_name
-    efs_dns     = aws_efs_file_system.caddy_certs.dns_name
+    domain_name   = var.domain_name
+    efs_dns       = aws_efs_file_system.caddy_certs.dns_name
+    github_branch = var.github_branch
   })
 
   depends_on = [aws_efs_mount_target.caddy_certs_mt]

@@ -21,3 +21,9 @@ variable "server_running" {
   type        = bool
   default     = true
 }
+
+variable "github_branch" {
+  description = "The GitHub branch to checkout on the EC2 instance"
+  type        = string
+  default     = "main"
+}

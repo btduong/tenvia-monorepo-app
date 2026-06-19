@@ -28,8 +28,8 @@ systemctl enable docker
 systemctl start docker
 
 # Clone the public repository
-echo "Cloning the repository..."
-git clone https://github.com/btduong/tenvia-monorepo-app.git /opt/tenvia-monorepo-app
+echo "Cloning the repository (branch: ${github_branch})..."
+git clone -b ${github_branch} https://github.com/btduong/tenvia-monorepo-app.git /opt/tenvia-monorepo-app
 cd /opt/tenvia-monorepo-app
 
 # Build and start the containers
