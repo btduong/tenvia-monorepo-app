@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.util.Map;
 
 @RestController
@@ -27,9 +29,10 @@ public class MultiplayerController {
 
     // REST endpoint to create a lobby and get the join code
     @PostMapping("/lobby")
-    public ResponseEntity<Lobby> createLobby(@AuthenticationPrincipal String userIdString) {
+    public ResponseEntity<Lobby> createLobby(@AuthenticationPrincipal String userIdString,
+                                             @RequestParam(defaultValue = "10") int limit) {
         Long hostId = Long.valueOf(userIdString);
-        Lobby lobby = multiplayerService.createLobby(hostId);
+        Lobby lobby = multiplayerService.createLobby(hostId, limit);
         return ResponseEntity.ok(lobby);
     }
 

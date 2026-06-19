@@ -15,14 +15,16 @@ public class Lobby {
     private List<Player> players;
     private GameState gameState;
     private int currentQuestionIndex;
+    private int totalQuestions;
     private QuestionDTO currentQuestion;
 
-    public Lobby(String lobbyId, Long hostId) {
+    public Lobby(String lobbyId, Long hostId, int totalQuestions) {
         this.lobbyId = lobbyId;
         this.hostId = hostId;
         this.players = new ArrayList<>();
         this.gameState = GameState.WAITING;
         this.currentQuestionIndex = 0;
+        this.totalQuestions = totalQuestions;
     }
 
     public String getLobbyId() { return lobbyId; }
@@ -31,6 +33,7 @@ public class Lobby {
     public GameState getGameState() { return gameState; }
     public void setGameState(GameState gameState) { this.gameState = gameState; }
     public int getCurrentQuestionIndex() { return currentQuestionIndex; }
+    public int getTotalQuestions() { return totalQuestions; }
     public void incrementQuestionIndex() { this.currentQuestionIndex++; }
     public QuestionDTO getCurrentQuestion() { return currentQuestion; }
     public void setCurrentQuestion(QuestionDTO currentQuestion) { this.currentQuestion = currentQuestion; }

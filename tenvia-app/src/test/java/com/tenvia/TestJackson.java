@@ -10,7 +10,7 @@ import java.util.List;
 
 public class TestJackson {
     public static void main(String[] args) throws Exception {
-        Lobby lobby = new Lobby("TEST", 1L);
+        Lobby lobby = new Lobby("TEST", 1L, 10);
         QuestionDTO question = QuestionDTO.builder()
             .id(1L)
             .questionText("What is 2+2?")

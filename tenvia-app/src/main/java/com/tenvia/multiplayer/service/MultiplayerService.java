@@ -25,9 +25,9 @@ public class MultiplayerService {
         this.questionService = questionService;
     }
 
-    public Lobby createLobby(Long hostId) {
+    public Lobby createLobby(Long hostId, int limit) {
         String lobbyId = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        Lobby lobby = new Lobby(lobbyId, hostId);
+        Lobby lobby = new Lobby(lobbyId, hostId, limit);
         lobbies.put(lobbyId, lobby);
         return lobby;
     }
@@ -59,6 +59,12 @@ public class MultiplayerService {
         if (lobby != null && lobby.getHostId().equals(hostId)) {
             if (lobby.getGameState() == Lobby.GameState.RESULTS) {
                 lobby.incrementQuestionIndex();
+            }
+
+            if (lobby.getCurrentQuestionIndex() >= lobby.getTotalQuestions()) {
+                lobby.setGameState(Lobby.GameState.FINISHED);
+                broadcastLobbyState(lobbyId);
+                return;
             }
             
             // Fetch a random question for the new round
