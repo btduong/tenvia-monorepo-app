@@ -3,6 +3,7 @@ services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"   # RabbitMQ message port
       - "15672:15672" # Management UI port
@@ -17,6 +18,7 @@ services:
 
   prometheus:
     image: prom/prometheus
+    restart: unless-stopped
     ports:
       - "9090:9090"
     volumes:
@@ -24,6 +26,7 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:latest
+    restart: unless-stopped
     ports:
       - "16686:16686" # Jeager UI
       - "4318:4318" # accept OpenTelemetry Protocol (OTLP) over HTTP
@@ -44,6 +47,7 @@ services:
 
   leaderboard-service:
     image: leaderboard-service:latest # The name it will create
+    restart: unless-stopped
     build:
       context: .
       dockerfile: leaderboard-service/Dockerfile
@@ -61,6 +65,7 @@ services:
 
   tenvia-app:
     image: tenvia-app:latest
+    restart: unless-stopped
     build:
       context: .
       dockerfile: tenvia-app/Dockerfile
