@@ -47,6 +47,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests.requestMatchers("/users/login").permitAll() // allows all to go to /login
                         .requestMatchers("/h2-console/**").permitAll() // permit console page
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll() // permit websocket handshake and sockjs endpoints
+                        .requestMatchers("/error").permitAll() // permit error dispatcher
                         .anyRequest().authenticated()) // all other requests need a JWT token
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -60,9 +62,10 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // Allow all origins for dev
+        configuration.setAllowedOriginPatterns(List.of("*")); // Allow all origins pattern for dev
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowCredentials(true);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

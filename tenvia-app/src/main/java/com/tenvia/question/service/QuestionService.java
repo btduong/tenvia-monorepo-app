@@ -6,6 +6,7 @@ import com.tenvia.question.exceptions.QuestionNotFoundException;
 import com.tenvia.question.repositories.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.List;
 
 
 @Service
+@Transactional
 public class QuestionService {
 
     @Autowired

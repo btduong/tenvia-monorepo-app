@@ -73,6 +73,9 @@ public class JwtUtil {
                 .build()
                 .parseSignedClaims(jwt);
         String roleString = parsedClaims.getPayload().get("role", String.class);
+        if (roleString == null) {
+            return UserRole.ROLE_USER; // Fallback for old tokens
+        }
         return UserRole.valueOf(roleString);
     }
 
